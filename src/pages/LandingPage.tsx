@@ -7,19 +7,13 @@ import { useEffect, useState } from "react";
 ───────────────────────────────────────────── */
 function CloudKitLogo({ size = 32 }: { size?: number }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <defs>
-        <linearGradient id="logoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#60a5fa" />
-          <stop offset="100%" stopColor="#a78bfa" />
-        </linearGradient>
-      </defs>
-      <path d="M30 22a6 6 0 0 0-5.5-5.98A9 9 0 0 0 6 20a6 6 0 0 0 0 12h24a6 6 0 0 0 0-12z" fill="url(#logoGrad)" opacity="0.9" />
-      <rect x="15" y="19" width="10" height="7" rx="1.5" fill="#0f172a" opacity="0.7" />
-      <rect x="17" y="17" width="6" height="3" rx="1" fill="#0f172a" opacity="0.7" />
-      <circle cx="18" cy="23" r="1" fill="url(#logoGrad)" />
-      <circle cx="22" cy="23" r="1" fill="url(#logoGrad)" />
-    </svg>
+    <img
+      width={size}
+      height={size}
+      src="/src/assets/cloudkit.png"
+      alt="CloudKit logo"
+      style={{ objectFit: "contain" }}
+    />
   );
 }
 
@@ -222,8 +216,8 @@ export default function LandingPage() {
           transition: "all 0.3s ease",
         }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <CloudKitLogo size={28} />
-            <span style={{ fontWeight: 700, fontSize: 17, letterSpacing: "-0.03em", color: "#fff" }}>CloudKit</span>
+            <CloudKitLogo size={100} />
+            <span style={{ fontWeight: 700, fontSize: 17, letterSpacing: "-0.03em", color: "#fff" }}></span>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <a href="#" style={{ color: "rgba(255,255,255,0.6)", fontSize: 14, fontWeight: 500, textDecoration: "none", padding: "6px 14px" }}>Log In</a>
