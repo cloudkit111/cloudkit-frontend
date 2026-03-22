@@ -1,4 +1,5 @@
 "use client";
+import { Link } from "react-router-dom";
 
 import { useEffect, useState } from "react";
 
@@ -220,8 +221,8 @@ export default function LandingPage() {
             <span style={{ fontWeight: 700, fontSize: 17, letterSpacing: "-0.03em", color: "#fff" }}></span>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <a href="#" style={{ color: "rgba(255,255,255,0.6)", fontSize: 14, fontWeight: 500, textDecoration: "none", padding: "6px 14px" }}>Log In</a>
-            <a href="#" className="ck-btn-primary" style={{ padding: "8px 18px", fontSize: 13 }}>Sign Up</a>
+            <Link style={{ color: "rgba(255,255,255,0.6)", fontSize: 14, fontWeight: 500, textDecoration: "none", padding: "6px 14px" }} to="/login">Log In</Link>
+            <Link className="ck-btn-primary" style={{ padding: "8px 18px", fontSize: 13 }} to="/login">Sign Up</Link>
           </div>
         </nav>
 
@@ -262,13 +263,14 @@ export default function LandingPage() {
             </p>
 
             <div className="ck-fade-up-3" style={{ display: "flex", justifyContent: "center" }}>
-              <a href="#" className="ck-btn-primary">
+              <Link className="ck-btn-primary" to="/login">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/>
                   <polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/>
                 </svg>
                 Start Deploying
-              </a>
+                </Link>
+              
             </div>
 
             <HeroCloud />
@@ -347,8 +349,8 @@ export default function LandingPage() {
                   <span style={{ color:"#a78bfa",fontWeight:500 }}>Enterprise</span> needs.
                 </p>
                 <div style={{ display:"flex",gap:10,flexWrap:"wrap" }}>
-                  <a href="#" className="ck-btn-primary">Start Deploying</a>
-                  <a href="#" className="ck-btn-outline">Talk to an Expert</a>
+                  <Link className="ck-btn-primary" to="/login">Start Deploying</Link>
+                  
                 </div>
               </div>
             </div>
@@ -361,7 +363,7 @@ export default function LandingPage() {
               <p style={{ fontSize:14,color:"rgba(255,255,255,0.45)",lineHeight:1.65,marginBottom:28 }}>
                 With an interactive product tour, trial, or personalized demo tailored to your team.
               </p>
-              <a href="#" className="ck-btn-outline">Explore Enterprise →</a>
+              <div className="ck-btn-outline">Explore Enterprise →</div>
             </div>
           </div>
         </section>
