@@ -192,7 +192,7 @@ export default function DashboardPage() {
 
   const fetchUser = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/auth/me", {
+      const res = await axios.get(`${import.meta.env.VITE_BACKEND_URI}/auth/me`, {
         withCredentials: true,
       });
       setUser(res.data);
@@ -204,7 +204,7 @@ export default function DashboardPage() {
 
   const handleLogout = async () => {
     try {
-      await axios.get("http://localhost:5000/auth/logout", { withCredentials: true });
+      await axios.get(`${import.meta.env.VITE_BACKEND_URI}/auth/logout`, { withCredentials: true });
       window.location.href = "/";
     } catch (err) {
       console.log(err);
