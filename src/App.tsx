@@ -4,6 +4,7 @@ import LandingPage from "./pages/LandingPage";
 import LoginPage from "./pages/LoginPage";
 import DashboardPage from "./pages/DashboardPage";
 import DeployPage from "./pages/DeployPage";
+import ProjectsPage from "./pages/ProjectsPage";
 
 function App() {
   return (
@@ -13,6 +14,7 @@ function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/deploy-project" element={<DeployPage />} />
+        <Route path="/my-project" element={<ProjectsPage />} />
       </Routes>
     </>
   );
