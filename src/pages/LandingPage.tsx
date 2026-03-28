@@ -1,6 +1,6 @@
 "use client";
 import { Link } from "react-router-dom";
-import logo from "./assets/cloudkit.png";
+import logo from "../assets/cloudkit.png";
 import { useEffect, useState } from "react";
 
 /* ─────────────────────────────────────────────

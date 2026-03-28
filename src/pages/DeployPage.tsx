@@ -3,7 +3,7 @@ import axios from "axios";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { socket } from "../utils/socket";
-import logo from "./assets/cloudkit.png";
+import logo from "../assets/cloudkit.png";
 
 // ── Confetti ───────────────────────────────────────────────────────────────
 function ConfettiCanvas({ active }: { active: boolean }) {

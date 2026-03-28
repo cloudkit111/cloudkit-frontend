@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
-import logo from "./assets/cloudkit.png";
+import logo from "../assets/cloudkit.png";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
