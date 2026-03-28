@@ -3,7 +3,7 @@ import { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
-import logo from "./assets/cloudkit.png";
+import logo from "../assets/cloudkit.png";
 
 // ── Cloud / floating orbs canvas animation ────────────────────────────────
 
