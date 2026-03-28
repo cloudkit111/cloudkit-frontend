@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { useEffect, useState, useRef } from "react";
 import axios from "axios";
+import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 
 // ── Cloud / floating orbs canvas animation ────────────────────────────────
@@ -305,11 +306,11 @@ export default function DashboardPage() {
         {/* ── Topbar ── */}
         <header className="h-14 border-b border-[#1f1f1f] flex items-center justify-between px-6 sticky top-0 z-50 bg-[rgba(10,10,10,0.85)] backdrop-blur-md">
           <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-md flex items-center justify-center text-sm font-bold text-black bg-gradient-to-br from-white to-[#888]">
-              ▲
+            <div className="w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold text-black bg-gradient-to-br from-white to-[#888]">
+              <img src="src\assets\cloudkit.png" alt="error" />
             </div>
             <span className="text-[15px] font-semibold tracking-tight text-[#ededed]">
-              DeployKit
+              cloudKit
             </span>
           </div>
 
@@ -358,12 +359,11 @@ export default function DashboardPage() {
                     {user?.email}
                   </div>
                 </div>
-                <div className="flex items-center gap-2.5 px-3.5 py-2.5 text-[13px] text-[#aaa] cursor-pointer hover:bg-[#1a1a1a] hover:text-[#ededed] transition-colors duration-100">
-                  <span>⚙️</span> Settings
-                </div>
+                <Link to="/my-project">               
                 <div className="flex items-center gap-2.5 px-3.5 py-2.5 text-[13px] text-[#aaa] cursor-pointer hover:bg-[#1a1a1a] hover:text-[#ededed] transition-colors duration-100">
                   <span>📁</span> Projects
                 </div>
+                </Link>
                 <div
                   className="flex items-center gap-2.5 px-3.5 py-2.5 text-[13px] text-red-400 cursor-pointer border-t border-[#1e1e1e] hover:bg-red-400/[0.08] transition-colors duration-100"
                   onClick={handleLogout}

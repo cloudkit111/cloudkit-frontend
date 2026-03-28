@@ -333,9 +333,26 @@ function DeployCanvas() {
 }
 
 // ── Log line ──────────────────────────────────────────────────────────────
-function LogLine({ line }: { line: string }) {
+function LogLine({ line, isInit }: { line: string; isInit?: boolean }) {
   const trimmed = line.trim();
   if (!trimmed) return <div className="h-2" />;
+
+  // ── FIX 2: init lines get a distinct dim style ──
+  if (isInit) {
+    return (
+      <div className="flex gap-2 leading-relaxed">
+        <span
+          style={{ color: "#3a3a3a", userSelect: "none" }}
+          className="flex-shrink-0 text-[11px] pt-px"
+        >
+          ›
+        </span>
+        <span className="text-[12.5px] font-mono break-all text-[#3a3a3a] italic">
+          {trimmed}
+        </span>
+      </div>
+    );
+  }
 
   let prefixColor = "#555";
   let textColor = "#9ca3af";
@@ -399,6 +416,64 @@ function StatusBadge({ status }: { status: Status }) {
   );
 }
 
+// ── Init log messages shown before real logs arrive ───────────────────────
+const INIT_MESSAGES = [
+  "Initializing project environment…",
+  "Fetching repository metadata…",
+  "Resolving dependencies…",
+  "Provisioning build container…",
+  "Setting up file system…",
+  "Preparing build pipeline…",
+];
+
+// ── Live Preview Frame (scales 1280px site into container like Vercel) ───
+function PreviewFrame({ url }: { url: string }) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [scale, setScale] = useState(0.27);
+  const RENDER_W = 1280;
+  const RENDER_H = 800;
+
+  useEffect(() => {
+    const update = () => {
+      if (!containerRef.current) return;
+      setScale(containerRef.current.offsetWidth / RENDER_W);
+    };
+    update();
+    const ro = new ResizeObserver(update);
+    if (containerRef.current) ro.observe(containerRef.current);
+    return () => ro.disconnect();
+  }, []);
+
+  const scaledH = Math.ceil(RENDER_H * scale);
+
+  return (
+    <div
+      ref={containerRef}
+      className="relative w-full overflow-hidden"
+      style={{ height: scaledH }}
+    >
+      <iframe
+        src={url}
+        title="Live Preview"
+        sandbox="allow-scripts allow-same-origin allow-forms"
+        style={{
+          border: "none",
+          width: `${RENDER_W}px`,
+          height: `${RENDER_H}px`,
+          display: "block",
+          transformOrigin: "top left",
+          transform: `scale(${scale})`,
+          pointerEvents: "none",
+        }}
+      />
+      <div
+        className="absolute bottom-0 left-0 right-0 h-8 pointer-events-none"
+        style={{ background: "linear-gradient(to bottom, transparent, rgba(13,13,13,0.8))" }}
+      />
+    </div>
+  );
+}
+
 // ── Main Deploy Page ──────────────────────────────────────────────────────
 export default function DeployPage() {
   const githubRepoURL = sessionStorage.getItem("deployment_url") ?? "";
@@ -411,13 +486,24 @@ export default function DeployPage() {
   const [deployUrl, setDeployUrl] = useState("");
   const [showConfetti, setShowConfetti] = useState(false);
   const [showModal, setShowModal] = useState(false);
+
+  // ── FIX 2: track init phase & init log lines separately ──
+  const [initLogs, setInitLogs] = useState<string[]>([]);
+  const [isInitPhase, setIsInitPhase] = useState(false);
+  const initTimersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
+  const deployUrlRef = useRef("");
+  const slugRef = useRef("");
+
+  // ── FIX: guard so project is stored only once ──
+  const hasStoredRef = useRef(false);
+
   const logsEndRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
 
   // Auto-scroll logs
   useEffect(() => {
     logsEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [logs]);
+  }, [logs, initLogs]);
 
   // Trigger confetti + modal on success
   useEffect(() => {
@@ -430,13 +516,31 @@ export default function DeployPage() {
 
   // Socket listener — preserved exactly as original
   useEffect(() => {
-    socket.on("message", (log: string) => {
+    const handleMessage = (log: string) => {
+      // ── FIX 2: first real log → end init phase, clear init timers ──
+      setIsInitPhase(false);
+      initTimersRef.current.forEach(clearTimeout);
+      initTimersRef.current = [];
+
       setLogs((prev) => [...prev, log]);
       if (/error|fail/i.test(log)) setStatus("error");
-      else if (/success|done|complete|built/i.test(log)) setStatus("success");
-    });
+      else if (/success|done|complete|built/i.test(log)) {
+        setStatus("success");
+        // ── FIX: only store once using hasStoredRef guard ──
+        if (!hasStoredRef.current) {
+          hasStoredRef.current = true;
+          axios.post(
+            `${import.meta.env.VITE_BACKEND_URI}/api/add`,
+            { project_url: deployUrlRef.current, slug: slugRef.current, repoName },
+            { withCredentials: true }
+          ).catch((e) => console.log("StoreProject error:", e));
+        }
+      }
+    };
+
+    socket.on("message", handleMessage);
     return () => {
-      socket.off("message");
+      socket.off("message", handleMessage);
     };
   }, []);
 
@@ -445,6 +549,16 @@ export default function DeployPage() {
     setHasDeployed(true);
     setStatus("deploying");
     setLogs([]);
+    setInitLogs([]);
+
+    // ── FIX 2: start init phase — drip messages every ~1.2s ──
+    setIsInitPhase(true);
+    INIT_MESSAGES.forEach((msg, i) => {
+      const t = setTimeout(() => {
+        setInitLogs((prev) => [...prev, msg]);
+      }, i * 1200);
+      initTimersRef.current.push(t);
+    });
 
     try {
       const res = await axios.post(
@@ -452,15 +566,16 @@ export default function DeployPage() {
         { gitURL: githubRepoURL },
       );
 
-      // Capture the deploy URL from response
+      // ── FIX 1: store URL but DON'T show it yet — shown only on success ──
       const url =
         res?.data?.data?.url ??
         res?.data?.data?.deployUrl ??
         res?.data?.url ??
         "";
-      if (url) setDeployUrl(url);
+      if (url) { setDeployUrl(url); deployUrlRef.current = url; }
 
-      const slug = res?.data?.data?.projectSlug;
+      const slug = res?.data?.data?.projectSlug ?? "";
+      slugRef.current = slug;
       const channel = `logs:${slug}`;
       if (socket.connected) {
         socket.emit("subscribe", channel);
@@ -470,10 +585,23 @@ export default function DeployPage() {
         });
       }
     } catch (err) {
+      setIsInitPhase(false);
+      initTimersRef.current.forEach(clearTimeout);
       setLogs((prev) => [...prev, "Error: Failed to start deployment."]);
       setStatus("error");
     }
   };
+
+  // Cleanup init timers on unmount
+  useEffect(() => {
+    return () => {
+      initTimersRef.current.forEach(clearTimeout);
+    };
+  }, []);
+
+  // Combined log lines for rendering
+  const allInitLogs = initLogs;
+  const realLogsStarted = logs.length > 0;
 
   return (
     <>
@@ -508,15 +636,15 @@ export default function DeployPage() {
         {/* ── Topbar ── */}
         <header className="h-14 border-b border-[#1f1f1f] flex items-center justify-between px-6 sticky top-0 z-50 bg-[rgba(10,10,10,0.85)] backdrop-blur-md">
           <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-md flex items-center justify-center text-sm font-bold text-black bg-gradient-to-br from-white to-[#888]">
-              ▲
+            <div className="w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold text-black bg-gradient-to-br from-white to-[#888]">
+              <img src="src\assets\cloudkit.png" alt="error" />
             </div>
             <span className="text-[15px] font-semibold tracking-tight text-[#ededed]">
-              DeployKit
+              cloudKit
             </span>
           </div>
           <button
-            onClick={() => navigate("/")}
+            onClick={() => navigate("/dashboard")}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#222] bg-[#111] text-xs text-[#666] cursor-pointer transition-all duration-150 hover:border-[#333] hover:text-[#ccc]"
           >
             ← Dashboard
@@ -571,8 +699,8 @@ export default function DeployPage() {
                 </div>
               </div>
 
-              {/* Deploy URL card — visible once deployed */}
-              {deployUrl && (
+              {/* ── FIX 1: Deploy URL card — only visible after deploy SUCCESS ── */}
+              {status === "success" && deployUrl && (
                 <div className="bg-[#111] border border-emerald-500/20 rounded-xl p-4 flex items-center gap-3">
                   <span className="w-2 h-2 rounded-full bg-emerald-500 flex-shrink-0 animate-pulse" />
                   <a
@@ -601,21 +729,52 @@ export default function DeployPage() {
                 className="bg-[#111] border border-[#1e1e1e] rounded-xl overflow-hidden flex-1"
                 style={{ minHeight: 180 }}
               >
-                <div
-                  className="relative w-full h-full"
-                  style={{ minHeight: 180 }}
-                >
-                  <DeployCanvas />
-                  <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none select-none gap-1">
-                    <StatusBadge status={status} />
-                    <div className="text-[11px] text-[#333] mt-1">
-                      {status === "idle" && "Awaiting deployment"}
-                      {status === "deploying" && "Building your project…"}
-                      {status === "success" && "Your project is live 🎉"}
-                      {status === "error" && "Something went wrong"}
+                {status === "success" && deployUrl ? (
+                  /* ── Live preview iframe (like Vercel) ── */
+                  <div className="relative w-full h-full flex flex-col" style={{ minHeight: 180 }}>
+                    {/* Fake browser chrome bar */}
+                    <div className="flex items-center gap-2 px-3 py-2 border-b border-[#1e1e1e] bg-[#0d0d0d] flex-shrink-0">
+                      <div className="flex gap-1.5">
+                        <span className="w-2 h-2 rounded-full bg-[#ff5f57]" />
+                        <span className="w-2 h-2 rounded-full bg-[#febc2e]" />
+                        <span className="w-2 h-2 rounded-full bg-[#28c840]" />
+                      </div>
+                      <div className="flex-1 bg-[#1a1a1a] border border-[#222] rounded-md px-2.5 py-1 flex items-center gap-1.5 min-w-0">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 flex-shrink-0" />
+                        <span className="text-[10px] font-mono text-[#555] truncate">{deployUrl}</span>
+                      </div>
+                      <a
+                        href={deployUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-[#444] hover:text-[#888] transition-colors duration-150 flex-shrink-0"
+                        title="Open in new tab"
+                      >
+                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none">
+                          <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14L21 3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+                      </a>
+                    </div>
+                    {/* Iframe preview — rendered at 1280px then CSS-scaled down */}
+                    <PreviewFrame url={deployUrl} />
+                  </div>
+                ) : (
+                  /* ── Animated canvas while idle / deploying / error ── */
+                  <div
+                    className="relative w-full h-full"
+                    style={{ minHeight: 180 }}
+                  >
+                    <DeployCanvas />
+                    <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none select-none gap-1">
+                      <StatusBadge status={status} />
+                      <div className="text-[11px] text-[#333] mt-1">
+                        {status === "idle" && "Awaiting deployment"}
+                        {status === "deploying" && "Building your project…"}
+                        {status === "error" && "Something went wrong"}
+                      </div>
                     </div>
                   </div>
-                </div>
+                )}
               </div>
 
               {/* Deploy button */}
@@ -704,7 +863,7 @@ export default function DeployPage() {
                 </span>
               </div>
               <div className="flex items-center gap-3">
-                {logs.length > 0 && (
+                {(logs.length > 0 || initLogs.length > 0) && (
                   <span className="text-[10px] text-[#333] font-mono">
                     {logs.length} lines
                   </span>
@@ -717,7 +876,9 @@ export default function DeployPage() {
               className="log-scroll overflow-y-auto px-5 py-4 font-mono"
               style={{ height: 320, backgroundColor: "#080808" }}
             >
-              {logs.length === 0 ? (
+              {/* ── FIX 2: show init logs during init phase, real logs after ── */}
+              {!hasDeployed ? (
+                // Not started yet
                 <div className="h-full flex flex-col items-center justify-center gap-2 select-none">
                   <svg
                     width="28"
@@ -743,17 +904,40 @@ export default function DeployPage() {
                     />
                   </svg>
                   <span className="text-[12px] text-[#333]">
-                    {hasDeployed
-                      ? "Waiting for logs…"
-                      : "Press Deploy Now to start"}
+                    Press Deploy Now to start
                   </span>
                 </div>
-              ) : (
+              ) : realLogsStarted ? (
+                // Real logs from socket
                 <div className="flex flex-col gap-0.5">
                   {logs.map((line, i) => (
                     <LogLine key={i} line={line} />
                   ))}
                   <div ref={logsEndRef} />
+                </div>
+              ) : (
+                // Init phase — show dripping init messages
+                <div className="flex flex-col gap-0.5">
+                  {allInitLogs.map((line, i) => (
+                    <LogLine key={i} line={line} isInit />
+                  ))}
+                  {/* Blinking cursor to show it's alive */}
+                  <div className="flex gap-2 mt-1">
+                    <span className="text-[#2a2a2a] text-[11px]">›</span>
+                    <span
+                      className="text-[12.5px] font-mono text-[#2a2a2a]"
+                      style={{ animation: "blink 1s step-end infinite" }}
+                    >
+                      ▌
+                    </span>
+                  </div>
+                  <div ref={logsEndRef} />
+                  <style>{`
+                    @keyframes blink {
+                      0%, 100% { opacity: 1; }
+                      50% { opacity: 0; }
+                    }
+                  `}</style>
                 </div>
               )}
             </div>
