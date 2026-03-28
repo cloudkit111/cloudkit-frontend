@@ -3,6 +3,7 @@ import axios from "axios";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { socket } from "../utils/socket";
+import logo from "./assets/cloudkit.png";
 
 // ── Confetti ───────────────────────────────────────────────────────────────
 function ConfettiCanvas({ active }: { active: boolean }) {
@@ -637,7 +638,7 @@ export default function DeployPage() {
         <header className="h-14 border-b border-[#1f1f1f] flex items-center justify-between px-6 sticky top-0 z-50 bg-[rgba(10,10,10,0.85)] backdrop-blur-md">
           <div className="flex items-center gap-2">
             <div className="w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold text-black bg-gradient-to-br from-white to-[#888]">
-              <img src="src\assets\cloudkit.png" alt="error" />
+              <img src={logo} alt="error" />
             </div>
             <span className="text-[15px] font-semibold tracking-tight text-[#ededed]">
               cloudKit

@@ -1,6 +1,6 @@
 "use client";
 import { Link } from "react-router-dom";
-
+import logo from "./assets/cloudkit.png";
 import { useEffect, useState } from "react";
 
 /* ─────────────────────────────────────────────
@@ -11,7 +11,7 @@ function CloudKitLogo({ size = 32 }: { size?: number }) {
     <img
       width={size}
       height={size}
-      src="/src/assets/cloudkit.png"
+      src={logo}
       alt="CloudKit logo"
       style={{ objectFit: "contain" }}
     />
