@@ -5,10 +5,14 @@ import LoginPage from "./pages/LoginPage";
 import DashboardPage from "./pages/DashboardPage";
 import DeployPage from "./pages/DeployPage";
 import ProjectsPage from "./pages/ProjectsPage";
+import { Toaster } from "@/components/ui/sonner";
 
 function App() {
   return (
     <>
+      <div>
+        <Toaster position="bottom-right" />
+      </div>
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<LoginPage />} />

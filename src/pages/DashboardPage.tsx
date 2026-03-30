@@ -1,9 +1,10 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { useEffect, useState, useRef } from "react";
-import axios from "axios";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import logo from "../assets/cloudkit.png";
+import api from "../config/api-client"
+import { toast } from "sonner";
 
 // ── Cloud / floating orbs canvas animation ────────────────────────────────
 
@@ -208,13 +209,15 @@ export default function DashboardPage() {
 
   const fetchUser = async () => {
     try {
-      const res = await axios.get(
+      const res = await api.get(
         `${import.meta.env.VITE_BACKEND_URI}/auth/me`,
         {
           withCredentials: true,
         },
       );
+      console.log(res) ;
       setUser(res.data);
+      if(res.status===200) toast(`Loaded ${res?.data?.repos?.length} public repositories`)
       setRepos(res.data.repos || []);
     } catch (err) {
       console.log(err);
@@ -223,7 +226,7 @@ export default function DashboardPage() {
 
   const handleLogout = async () => {
     try {
-      await axios.get(`${import.meta.env.VITE_BACKEND_URI}/auth/logout`, {
+      await api.get(`${import.meta.env.VITE_BACKEND_URI}/auth/logout`, {
         withCredentials: true,
       });
       window.location.href = "/";
