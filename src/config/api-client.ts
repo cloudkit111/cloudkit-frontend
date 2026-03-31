@@ -4,7 +4,7 @@ axios.defaults.withCredentials = true;
 
 const api: AxiosInstance = axios.create({
   baseURL: `${import.meta.env.VITE_BACKEND_URI}`,
-  timeout: 1000,
+  timeout: 30000,
   withCredentials: true,
 });
 
