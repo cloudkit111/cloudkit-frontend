@@ -22,6 +22,9 @@ const INIT_MESSAGES = [
   "Preparing build pipeline…",
 ];
 
+type Status = "idle" | "deploying" | "success" | "error";
+
+
 // ── Main Deploy Page ──────────────────────────────────────────────────────
 export default function DeployPage() {
   const githubRepoURL = sessionStorage.getItem("deployment_url") ?? "";
@@ -29,7 +32,7 @@ export default function DeployPage() {
     githubRepoURL.split("/").pop()?.replace(".git", "") ?? "project";
   const deployLock = useRef(false);
   const [logs, setLogs] = useState<string[]>([]);
-  const [status, setStatus] = useState("idle");
+  const [status, setStatus] = useState<Status>("idle");
   const [hasDeployed, setHasDeployed] = useState(false);
   const [deployUrl, setDeployUrl] = useState("");
   const [showConfetti, setShowConfetti] = useState(false);
