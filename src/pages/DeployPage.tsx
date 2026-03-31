@@ -29,7 +29,7 @@ export default function DeployPage() {
     githubRepoURL.split("/").pop()?.replace(".git", "") ?? "project";
   const deployLock = useRef(false);
   const [logs, setLogs] = useState<string[]>([]);
-  const [status, setStatus] = useState<string>("idle");
+  const [status, setStatus] = useState("idle");
   const [hasDeployed, setHasDeployed] = useState(false);
   const [deployUrl, setDeployUrl] = useState("");
   const [showConfetti, setShowConfetti] = useState(false);
