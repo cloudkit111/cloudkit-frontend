@@ -25,6 +25,12 @@ const INIT_MESSAGES = [
 type Status = "idle" | "deploying" | "success" | "error";
 type SubdomainMode = "auto" | "custom";
 
+interface EnvVar {
+  key: string;
+  value: string;
+  id: string;
+}
+
 // ── Main Deploy Page ──────────────────────────────────────────────────────
 export default function DeployPage() {
   const githubRepoURL = sessionStorage.getItem("deployment_url") ?? "";
@@ -43,15 +49,17 @@ export default function DeployPage() {
   const [customSlug, setCustomSlug] = useState("");
   const [customSlugError, setCustomSlugError] = useState("");
 
+  // ── Environment Variables ──
+  const [envVars, setEnvVars] = useState<EnvVar[]>([]);
+  const [showEnvSection, setShowEnvSection] = useState(false);
+  const [showEnvToast, setShowEnvToast] = useState(false);
+
   // ── init phase & init log lines ──
   const [initLogs, setInitLogs] = useState<string[]>([]);
   const [isInitPhase, setIsInitPhase] = useState(false);
   const initTimersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
   const deployUrlRef = useRef("");
   const slugRef = useRef("");
-
-  // ── guard so project is stored only once ──
-  const hasStoredRef = useRef(false);
 
   const logsEndRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
@@ -77,7 +85,6 @@ export default function DeployPage() {
       initTimersRef.current.forEach(clearTimeout);
       initTimersRef.current = [];
 
-      // ✅ FIX: Backend publishes JSON.stringify({ log: "..." }), parse it
       let log = data;
       try {
         const parsed = JSON.parse(data);
@@ -92,20 +99,6 @@ export default function DeployPage() {
         setStatus("error");
       } else if (/(^|\s)(success|done|completed|built|complete)(\s|$)/i.test(log)) {
         setStatus("success");
-        if (!hasStoredRef.current && deployUrlRef.current && slugRef.current) {
-          hasStoredRef.current = true;
-          api
-            .post(
-              `${import.meta.env.VITE_BACKEND_URI}/api/add`,
-              {
-                project_url: deployUrlRef.current,
-                slug: slugRef.current,
-                repoName,
-              },
-              { withCredentials: true },
-            )
-            .catch((e) => console.log("StoreProject error:", e));
-        }
       }
     };
 
@@ -115,9 +108,10 @@ export default function DeployPage() {
     };
   }, []);
 
-  // ── Slug input handler ──
+  // ── Slug input handler with strict validation ──
   const handleSlugChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const raw = e.target.value;
+    // Only allow lowercase letters, numbers, and hyphens
     const sanitized = raw.toLowerCase().replace(/[^a-z0-9-]/g, "");
     setCustomSlug(sanitized);
 
@@ -125,9 +119,37 @@ export default function DeployPage() {
       setCustomSlugError("Minimum 3 characters required");
     } else if (sanitized.startsWith("-") || sanitized.endsWith("-")) {
       setCustomSlugError("Cannot start or end with a hyphen");
+    } else if (sanitized.includes("--")) {
+      setCustomSlugError("Cannot contain consecutive hyphens");
     } else {
       setCustomSlugError("");
     }
+  };
+
+  // ── Environment Variable Handlers ──
+  const addEnvVar = () => {
+    setEnvVars([...envVars, { key: "", value: "", id: Date.now().toString() }]);
+  };
+
+  const updateEnvVar = (id: string, field: "key" | "value", val: string) => {
+    setEnvVars(
+      envVars.map((env) => (env.id === id ? { ...env, [field]: val } : env))
+    );
+  };
+
+  const removeEnvVar = (id: string) => {
+    setEnvVars(envVars.filter((env) => env.id !== id));
+  };
+
+  const saveEnvVars = () => {
+    const validEnvs = envVars.filter((env) => env.key.trim() && env.value.trim());
+    if (validEnvs.length === 0) {
+      return;
+    }
+    
+    // Show toast
+    setShowEnvToast(true);
+    setTimeout(() => setShowEnvToast(false), 3000);
   };
 
   const handleDeploy = async () => {
@@ -142,6 +164,10 @@ export default function DeployPage() {
         setCustomSlugError("Cannot start or end with a hyphen");
         return;
       }
+      if (customSlug.includes("--")) {
+        setCustomSlugError("Cannot contain consecutive hyphens");
+        return;
+      }
     }
 
     deployLock.current = true;
@@ -150,7 +176,7 @@ export default function DeployPage() {
     setLogs([]);
     setInitLogs([]);
 
-    // Start init phase — drip messages every ~1.2s
+    // Start init phase
     setIsInitPhase(true);
     INIT_MESSAGES.forEach((msg, i) => {
       const t = setTimeout(() => {
@@ -160,13 +186,23 @@ export default function DeployPage() {
     });
 
     try {
+      // Convert env vars to object format
+      const envsObject: Record<string, string> = {};
+      envVars.forEach((env) => {
+        if (env.key.trim() && env.value.trim()) {
+          envsObject[env.key.trim()] = env.value.trim();
+        }
+      });
+
       const res = await api.post(
         `${import.meta.env.VITE_BACKEND_URI}/project`,
         {
           gitURL: githubRepoURL,
+          repoName,
           ...(subdomainMode === "custom" && customSlug
             ? { userSlug: customSlug }
             : {}),
+          ...(Object.keys(envsObject).length > 0 ? { envs: envsObject } : {}),
         },
       );
 
@@ -183,7 +219,7 @@ export default function DeployPage() {
       }
       slugRef.current = slug;
 
-      // ✅ FIX: Subscribe immediately after getting slug
+      // Subscribe to logs channel
       const channel = `logs:${slug}`;
       const subscribe = () => socket.emit("subscribe", channel);
 
@@ -206,7 +242,6 @@ export default function DeployPage() {
         return;
       }
 
-      // ✅ FIX: Show actual backend error message
       const msg =
         err?.response?.data?.error ??
         err?.response?.data?.msg ??
@@ -242,9 +277,33 @@ export default function DeployPage() {
           0%, 100% { opacity: 1; }
           50% { opacity: 0; }
         }
+        @keyframes slideIn {
+          from { transform: translateX(100%); opacity: 0; }
+          to { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes slideOut {
+          from { transform: translateX(0); opacity: 1; }
+          to { transform: translateX(100%); opacity: 0; }
+        }
+        .toast-enter { animation: slideIn 0.3s ease forwards; }
+        .toast-exit { animation: slideOut 0.3s ease forwards; }
       `}</style>
 
       <ConfettiCanvas active={showConfetti} />
+
+      {/* Toast notification for env saved */}
+      {showEnvToast && (
+        <div className="fixed top-20 right-6 z-[100] toast-enter">
+          <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-xl px-4 py-3 flex items-center gap-3 backdrop-blur-md shadow-lg">
+            <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="3">
+                <path d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+            <span className="text-[13px] text-emerald-400 font-medium">Environment variables saved</span>
+          </div>
+        </div>
+      )}
 
       {showModal && (
         <SuccessModal
@@ -409,8 +468,107 @@ export default function DeployPage() {
                         </span>
                       ) : (
                         <span className="text-[11px] text-[#444] pl-1">
-                          Lowercase letters, numbers, and hyphens only.
+                          Only lowercase letters, numbers, and hyphens allowed.
                         </span>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                {/* ── Environment Variables Section ── */}
+                <div className="mt-5 pt-4 border-t border-[#1a1a1a]">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="text-[11px] uppercase tracking-[0.15em] text-[#444]">
+                      Environment Variables
+                    </div>
+                    <button
+                      onClick={() => setShowEnvSection(!showEnvSection)}
+                      disabled={hasDeployed}
+                      className="text-[11px] text-[#666] hover:text-[#999] transition-colors duration-150 flex items-center gap-1"
+                      style={{ cursor: hasDeployed ? "not-allowed" : "pointer" }}
+                    >
+                      {showEnvSection ? "Hide" : "Show"}
+                      <svg
+                        width="10"
+                        height="10"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        style={{
+                          transform: showEnvSection ? "rotate(180deg)" : "rotate(0deg)",
+                          transition: "transform 0.2s",
+                        }}
+                      >
+                        <path d="M6 9l6 6 6-6" />
+                      </svg>
+                    </button>
+                  </div>
+
+                  {showEnvSection && (
+                    <div className="space-y-2">
+                      {envVars.map((env) => (
+                        <div key={env.id} className="flex gap-2">
+                          <input
+                            type="text"
+                            value={env.key}
+                            onChange={(e) =>
+                              updateEnvVar(env.id, "key", e.target.value)
+                            }
+                            disabled={hasDeployed}
+                            placeholder="KEY"
+                            className="flex-1 bg-[#0d0d0d] border border-[#1e1e1e] rounded-lg px-3 py-2 text-[12px] font-mono text-[#ededed] outline-none focus:border-[#333] transition-colors placeholder:text-[#2e2e2e]"
+                            style={{ cursor: hasDeployed ? "not-allowed" : "text" }}
+                          />
+                          <input
+                            type="text"
+                            value={env.value}
+                            onChange={(e) =>
+                              updateEnvVar(env.id, "value", e.target.value)
+                            }
+                            disabled={hasDeployed}
+                            placeholder="value"
+                            className="flex-1 bg-[#0d0d0d] border border-[#1e1e1e] rounded-lg px-3 py-2 text-[12px] font-mono text-[#ededed] outline-none focus:border-[#333] transition-colors placeholder:text-[#2e2e2e]"
+                            style={{ cursor: hasDeployed ? "not-allowed" : "text" }}
+                          />
+                          <button
+                            onClick={() => removeEnvVar(env.id)}
+                            disabled={hasDeployed}
+                            className="w-8 h-8 rounded-lg border border-[#1e1e1e] bg-[#0d0d0d] text-[#666] hover:text-[#e24b4a] hover:border-[#e24b4a]/30 transition-all duration-150 flex items-center justify-center"
+                            style={{ cursor: hasDeployed ? "not-allowed" : "pointer" }}
+                          >
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                              <path d="M18 6L6 18M6 6l12 12" />
+                            </svg>
+                          </button>
+                        </div>
+                      ))}
+
+                      <button
+                        onClick={addEnvVar}
+                        disabled={hasDeployed}
+                        className="w-full py-2 rounded-lg border border-dashed border-[#1e1e1e] bg-[#0d0d0d] text-[12px] text-[#666] hover:text-[#999] hover:border-[#333] transition-all duration-150 flex items-center justify-center gap-1.5"
+                        style={{ cursor: hasDeployed ? "not-allowed" : "pointer" }}
+                      >
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M12 5v14M5 12h14" />
+                        </svg>
+                        Add Variable
+                      </button>
+
+                      {envVars.length > 0 && (
+                        <div className="flex items-center justify-between pt-2">
+                          <div className="text-[10px] text-[#444] pl-1">
+                            {envVars.filter((e) => e.key.trim() && e.value.trim()).length} variable(s) ready
+                          </div>
+                          <button
+                            onClick={saveEnvVars}
+                            disabled={hasDeployed || envVars.filter((e) => e.key.trim() && e.value.trim()).length === 0}
+                            className="px-3 py-1.5 rounded-lg bg-[#1a1a1a] border border-[#222] text-[11px] text-[#999] hover:border-[#333] hover:text-[#ccc] transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            Save
+                          </button>
+                        </div>
                       )}
                     </div>
                   )}
