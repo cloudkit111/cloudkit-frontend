@@ -50,7 +50,7 @@ function GitHubIcon() {
   );
 }
 
-export default function LoginPage() {
+export default function SignupPage() {
   return (
     <>
       <style>{`

@@ -23,13 +23,7 @@ const INIT_MESSAGES = [
 ];
 
 type Status = "idle" | "deploying" | "success" | "error";
-type SubdomainMode = "auto" | "custom";
 
-interface EnvVar {
-  key: string;
-  value: string;
-  id: string;
-}
 
 // ── Main Deploy Page ──────────────────────────────────────────────────────
 export default function DeployPage() {
@@ -44,22 +38,15 @@ export default function DeployPage() {
   const [showConfetti, setShowConfetti] = useState(false);
   const [showModal, setShowModal] = useState(false);
 
-  // ── Subdomain toggle state ──
-  const [subdomainMode, setSubdomainMode] = useState<SubdomainMode>("auto");
-  const [customSlug, setCustomSlug] = useState("");
-  const [customSlugError, setCustomSlugError] = useState("");
-
-  // ── Environment Variables ──
-  const [envVars, setEnvVars] = useState<EnvVar[]>([]);
-  const [showEnvSection, setShowEnvSection] = useState(false);
-  const [showEnvToast, setShowEnvToast] = useState(false);
-
-  // ── init phase & init log lines ──
+  // ── FIX 2: track init phase & init log lines separately ──
   const [initLogs, setInitLogs] = useState<string[]>([]);
   const [isInitPhase, setIsInitPhase] = useState(false);
   const initTimersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
   const deployUrlRef = useRef("");
   const slugRef = useRef("");
+
+  // ── FIX: guard so project is stored only once ──
+  const hasStoredRef = useRef(false);
 
   const logsEndRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
@@ -78,27 +65,33 @@ export default function DeployPage() {
     }
   }, [status]);
 
-  // ── Socket listener ──
+  // Socket listener — preserved exactly as original
   useEffect(() => {
-    const handleMessage = (data: string) => {
+    const handleMessage = (log: string) => {
+      // ── FIX 2: first real log → end init phase, clear init timers ──
       setIsInitPhase(false);
       initTimersRef.current.forEach(clearTimeout);
       initTimersRef.current = [];
 
-      let log = data;
-      try {
-        const parsed = JSON.parse(data);
-        log = parsed.log ?? data;
-      } catch {
-        log = data;
-      }
-
       setLogs((prev) => [...prev, log]);
-
-      if (/(^|\s)(error|fail|failed)(\s|$)/i.test(log)) {
-        setStatus("error");
-      } else if (/(^|\s)(success|done|completed|built|complete)(\s|$)/i.test(log)) {
+      if (/(^|\s)(error|fail|failed)(\s|$)/i.test(log)) setStatus("error");
+      else if (/(^|\s)(success|done|completed|built)(\s|$)/i.test(log)) {
         setStatus("success");
+        // ── FIX: only store once using hasStoredRef guard ──
+        if (!hasStoredRef.current && deployUrlRef.current && slugRef.current) {
+          hasStoredRef.current = true;
+          api
+            .post(
+              `${import.meta.env.VITE_BACKEND_URI}/api/add`,
+              {
+                project_url: deployUrlRef.current,
+                slug: slugRef.current,
+                repoName,
+              },
+              { withCredentials: true },
+            )
+            .catch((e) => console.log("StoreProject error:", e));
+        }
       }
     };
 
@@ -108,75 +101,15 @@ export default function DeployPage() {
     };
   }, []);
 
-  // ── Slug input handler with strict validation ──
-  const handleSlugChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const raw = e.target.value;
-    // Only allow lowercase letters, numbers, and hyphens
-    const sanitized = raw.toLowerCase().replace(/[^a-z0-9-]/g, "");
-    setCustomSlug(sanitized);
-
-    if (sanitized && sanitized.length < 3) {
-      setCustomSlugError("Minimum 3 characters required");
-    } else if (sanitized.startsWith("-") || sanitized.endsWith("-")) {
-      setCustomSlugError("Cannot start or end with a hyphen");
-    } else if (sanitized.includes("--")) {
-      setCustomSlugError("Cannot contain consecutive hyphens");
-    } else {
-      setCustomSlugError("");
-    }
-  };
-
-  // ── Environment Variable Handlers ──
-  const addEnvVar = () => {
-    setEnvVars([...envVars, { key: "", value: "", id: Date.now().toString() }]);
-  };
-
-  const updateEnvVar = (id: string, field: "key" | "value", val: string) => {
-    setEnvVars(
-      envVars.map((env) => (env.id === id ? { ...env, [field]: val } : env))
-    );
-  };
-
-  const removeEnvVar = (id: string) => {
-    setEnvVars(envVars.filter((env) => env.id !== id));
-  };
-
-  const saveEnvVars = () => {
-    const validEnvs = envVars.filter((env) => env.key.trim() && env.value.trim());
-    if (validEnvs.length === 0) {
-      return;
-    }
-    
-    // Show toast
-    setShowEnvToast(true);
-    setTimeout(() => setShowEnvToast(false), 3000);
-  };
-
   const handleDeploy = async () => {
     if (deployLock.current) return;
-
-    if (subdomainMode === "custom") {
-      if (!customSlug || customSlug.trim().length < 3) {
-        setCustomSlugError("Please enter a valid subdomain (min 3 characters)");
-        return;
-      }
-      if (customSlug.startsWith("-") || customSlug.endsWith("-")) {
-        setCustomSlugError("Cannot start or end with a hyphen");
-        return;
-      }
-      if (customSlug.includes("--")) {
-        setCustomSlugError("Cannot contain consecutive hyphens");
-        return;
-      }
-    }
-
     deployLock.current = true;
     setHasDeployed(true);
     setStatus("deploying");
     setLogs([]);
     setInitLogs([]);
 
-    // Start init phase
+    // ── FIX 2: start init phase — drip messages every ~1.2s ──
     setIsInitPhase(true);
     INIT_MESSAGES.forEach((msg, i) => {
       const t = setTimeout(() => {
@@ -186,68 +119,36 @@ export default function DeployPage() {
     });
 
     try {
-      // Convert env vars to object format
-      const envsObject: Record<string, string> = {};
-      envVars.forEach((env) => {
-        if (env.key.trim() && env.value.trim()) {
-          envsObject[env.key.trim()] = env.value.trim();
-        }
-      });
-
       const res = await api.post(
         `${import.meta.env.VITE_BACKEND_URI}/project`,
-        {
-          gitURL: githubRepoURL,
-          repoName,
-          ...(subdomainMode === "custom" && customSlug
-            ? { userSlug: customSlug }
-            : {}),
-          ...(Object.keys(envsObject).length > 0 ? { envs: envsObject } : {}),
-        },
+        { gitURL: githubRepoURL },
       );
 
+      // ── FIX 1: store URL but DON'T show it yet — shown only on success ──
       const url =
         res?.data?.data?.url ??
         res?.data?.data?.deployUrl ??
         res?.data?.url ??
         "";
-      const slug = res?.data?.data?.projectSlug ?? "";
-
       if (url) {
         setDeployUrl(url);
         deployUrlRef.current = url;
       }
+
+      const slug = res?.data?.data?.projectSlug ?? "";
       slugRef.current = slug;
-
-      // Subscribe to logs channel
       const channel = `logs:${slug}`;
-      const subscribe = () => socket.emit("subscribe", channel);
-
       if (socket.connected) {
-        subscribe();
+        socket.emit("subscribe", channel);
       } else {
-        socket.once("connect", subscribe);
+        socket.once("connect", () => {
+          socket.emit("subscribe", channel);
+        });
       }
-
-    } catch (err: any) {
+    } catch (err) {
       setIsInitPhase(false);
       initTimersRef.current.forEach(clearTimeout);
-
-      if (err?.response?.status === 409) {
-        setCustomSlugError("This subdomain is already taken. Try another.");
-        setSubdomainMode("custom");
-        deployLock.current = false;
-        setHasDeployed(false);
-        setStatus("idle");
-        return;
-      }
-
-      const msg =
-        err?.response?.data?.error ??
-        err?.response?.data?.msg ??
-        err?.message ??
-        "Failed to start deployment.";
-      setLogs((prev) => [...prev, `Error: ${msg}`]);
+      setLogs((prev) => [...prev, "Error: Failed to start deployment."]);
       setStatus("error");
     }
   };
@@ -259,6 +160,8 @@ export default function DeployPage() {
     };
   }, []);
 
+  // Combined log lines for rendering
+  const allInitLogs = initLogs;
   const realLogsStarted = logs.length > 0;
 
   return (
@@ -273,37 +176,9 @@ export default function DeployPage() {
         .log-scroll::-webkit-scrollbar-track { background: transparent; }
         .log-scroll::-webkit-scrollbar-thumb { background: #222; border-radius: 2px; }
         .log-scroll::-webkit-scrollbar-thumb:hover { background: #333; }
-        @keyframes blink {
-          0%, 100% { opacity: 1; }
-          50% { opacity: 0; }
-        }
-        @keyframes slideIn {
-          from { transform: translateX(100%); opacity: 0; }
-          to { transform: translateX(0); opacity: 1; }
-        }
-        @keyframes slideOut {
-          from { transform: translateX(0); opacity: 1; }
-          to { transform: translateX(100%); opacity: 0; }
-        }
-        .toast-enter { animation: slideIn 0.3s ease forwards; }
-        .toast-exit { animation: slideOut 0.3s ease forwards; }
       `}</style>
 
       <ConfettiCanvas active={showConfetti} />
-
-      {/* Toast notification for env saved */}
-      {showEnvToast && (
-        <div className="fixed top-20 right-6 z-[100] toast-enter">
-          <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-xl px-4 py-3 flex items-center gap-3 backdrop-blur-md shadow-lg">
-            <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="3">
-                <path d="M5 13l4 4L19 7" />
-              </svg>
-            </div>
-            <span className="text-[13px] text-emerald-400 font-medium">Environment variables saved</span>
-          </div>
-        </div>
-      )}
 
       {showModal && (
         <SuccessModal
@@ -356,10 +231,9 @@ export default function DeployPage() {
 
           {/* Repo card + canvas panel */}
           <div className="grid grid-cols-1 md:grid-cols-5 gap-5 mb-6">
-            {/* Left – repo info + subdomain */}
+            {/* Left – repo info only */}
             <div className="md:col-span-3 flex flex-col gap-4">
               <div className="bg-[#111] border border-[#1e1e1e] rounded-xl p-5">
-                {/* Repository */}
                 <div className="text-[11px] uppercase tracking-[0.15em] text-[#444] mb-3">
                   Repository
                 </div>
@@ -384,198 +258,9 @@ export default function DeployPage() {
                     </div>
                   </div>
                 </div>
-
-                {/* ── Subdomain section ── */}
-                <div className="mt-5 pt-4 border-t border-[#1a1a1a]">
-                  <div className="text-[11px] uppercase tracking-[0.15em] text-[#444] mb-3">
-                    Subdomain
-                  </div>
-
-                  {/* Toggle pill */}
-                  <div className="flex gap-1 bg-[#0d0d0d] rounded-lg p-1 w-fit mb-3">
-                    {(["auto", "custom"] as const).map((m) => (
-                      <button
-                        key={m}
-                        onClick={() => {
-                          if (hasDeployed) return;
-                          setSubdomainMode(m);
-                          setCustomSlugError("");
-                        }}
-                        disabled={hasDeployed}
-                        className="px-3.5 py-1 rounded-md text-[12px] font-medium transition-all duration-150 capitalize"
-                        style={{
-                          background:
-                            subdomainMode === m ? "#ededed" : "transparent",
-                          color: subdomainMode === m ? "#0a0a0a" : "#555",
-                          cursor: hasDeployed ? "not-allowed" : "pointer",
-                          border: "none",
-                          outline: "none",
-                        }}
-                      >
-                        {m}
-                      </button>
-                    ))}
-                  </div>
-
-                  {subdomainMode === "auto" ? (
-                    <div className="flex items-center bg-[#0d0d0d] border border-[#1e1e1e] rounded-lg overflow-hidden">
-                      <span className="text-[13px] font-mono text-[#555] px-3 py-2 italic">
-                        auto-generated
-                      </span>
-                      <span className="text-[13px] text-[#3a3a3a] py-2 pr-3">
-                        .cloud-kit.app
-                      </span>
-                    </div>
-                  ) : (
-                    <div className="flex flex-col gap-1.5">
-                      <div
-                        className="flex items-center rounded-lg overflow-hidden transition-all duration-150"
-                        style={{
-                          border: customSlugError
-                            ? "1px solid #e24b4a"
-                            : "1px solid #333",
-                          background: "#0d0d0d",
-                        }}
-                      >
-                        <input
-                          type="text"
-                          value={customSlug}
-                          onChange={handleSlugChange}
-                          disabled={hasDeployed}
-                          placeholder="my-awesome-project"
-                          autoFocus
-                          className="flex-1 bg-transparent text-[13px] font-mono text-[#ededed] outline-none px-3 py-2 placeholder:text-[#2e2e2e]"
-                          style={{ cursor: hasDeployed ? "not-allowed" : "text" }}
-                        />
-                        <span className="text-[13px] text-[#555] py-2 pr-3 pl-0 whitespace-nowrap flex-shrink-0">
-                          .cloud-kit.app
-                        </span>
-                      </div>
-
-                      {customSlugError ? (
-                        <span className="text-[11px] text-[#e24b4a] pl-1 flex items-center gap-1">
-                          <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
-                          </svg>
-                          {customSlugError}
-                        </span>
-                      ) : customSlug ? (
-                        <span className="text-[11px] text-emerald-600 pl-1 flex items-center gap-1 font-mono">
-                          <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
-                          </svg>
-                          {customSlug}.cloud-kit.app
-                        </span>
-                      ) : (
-                        <span className="text-[11px] text-[#444] pl-1">
-                          Only lowercase letters, numbers, and hyphens allowed.
-                        </span>
-                      )}
-                    </div>
-                  )}
-                </div>
-
-                {/* ── Environment Variables Section ── */}
-                <div className="mt-5 pt-4 border-t border-[#1a1a1a]">
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="text-[11px] uppercase tracking-[0.15em] text-[#444]">
-                      Environment Variables
-                    </div>
-                    <button
-                      onClick={() => setShowEnvSection(!showEnvSection)}
-                      disabled={hasDeployed}
-                      className="text-[11px] text-[#666] hover:text-[#999] transition-colors duration-150 flex items-center gap-1"
-                      style={{ cursor: hasDeployed ? "not-allowed" : "pointer" }}
-                    >
-                      {showEnvSection ? "Hide" : "Show"}
-                      <svg
-                        width="10"
-                        height="10"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        style={{
-                          transform: showEnvSection ? "rotate(180deg)" : "rotate(0deg)",
-                          transition: "transform 0.2s",
-                        }}
-                      >
-                        <path d="M6 9l6 6 6-6" />
-                      </svg>
-                    </button>
-                  </div>
-
-                  {showEnvSection && (
-                    <div className="space-y-2">
-                      {envVars.map((env) => (
-                        <div key={env.id} className="flex gap-2">
-                          <input
-                            type="text"
-                            value={env.key}
-                            onChange={(e) =>
-                              updateEnvVar(env.id, "key", e.target.value)
-                            }
-                            disabled={hasDeployed}
-                            placeholder="KEY"
-                            className="flex-1 bg-[#0d0d0d] border border-[#1e1e1e] rounded-lg px-3 py-2 text-[12px] font-mono text-[#ededed] outline-none focus:border-[#333] transition-colors placeholder:text-[#2e2e2e]"
-                            style={{ cursor: hasDeployed ? "not-allowed" : "text" }}
-                          />
-                          <input
-                            type="text"
-                            value={env.value}
-                            onChange={(e) =>
-                              updateEnvVar(env.id, "value", e.target.value)
-                            }
-                            disabled={hasDeployed}
-                            placeholder="value"
-                            className="flex-1 bg-[#0d0d0d] border border-[#1e1e1e] rounded-lg px-3 py-2 text-[12px] font-mono text-[#ededed] outline-none focus:border-[#333] transition-colors placeholder:text-[#2e2e2e]"
-                            style={{ cursor: hasDeployed ? "not-allowed" : "text" }}
-                          />
-                          <button
-                            onClick={() => removeEnvVar(env.id)}
-                            disabled={hasDeployed}
-                            className="w-8 h-8 rounded-lg border border-[#1e1e1e] bg-[#0d0d0d] text-[#666] hover:text-[#e24b4a] hover:border-[#e24b4a]/30 transition-all duration-150 flex items-center justify-center"
-                            style={{ cursor: hasDeployed ? "not-allowed" : "pointer" }}
-                          >
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                              <path d="M18 6L6 18M6 6l12 12" />
-                            </svg>
-                          </button>
-                        </div>
-                      ))}
-
-                      <button
-                        onClick={addEnvVar}
-                        disabled={hasDeployed}
-                        className="w-full py-2 rounded-lg border border-dashed border-[#1e1e1e] bg-[#0d0d0d] text-[12px] text-[#666] hover:text-[#999] hover:border-[#333] transition-all duration-150 flex items-center justify-center gap-1.5"
-                        style={{ cursor: hasDeployed ? "not-allowed" : "pointer" }}
-                      >
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <path d="M12 5v14M5 12h14" />
-                        </svg>
-                        Add Variable
-                      </button>
-
-                      {envVars.length > 0 && (
-                        <div className="flex items-center justify-between pt-2">
-                          <div className="text-[10px] text-[#444] pl-1">
-                            {envVars.filter((e) => e.key.trim() && e.value.trim()).length} variable(s) ready
-                          </div>
-                          <button
-                            onClick={saveEnvVars}
-                            disabled={hasDeployed || envVars.filter((e) => e.key.trim() && e.value.trim()).length === 0}
-                            className="px-3 py-1.5 rounded-lg bg-[#1a1a1a] border border-[#222] text-[11px] text-[#999] hover:border-[#333] hover:text-[#ccc] transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
-                          >
-                            Save
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
               </div>
 
-              {/* Deploy URL card — only visible after SUCCESS */}
+              {/* ── FIX 1: Deploy URL card — only visible after deploy SUCCESS ── */}
               {status === "success" && deployUrl && (
                 <div className="bg-[#111] border border-emerald-500/20 rounded-xl p-4 flex items-center gap-3">
                   <span className="w-2 h-2 rounded-full bg-emerald-500 flex-shrink-0 animate-pulse" />
@@ -606,10 +291,12 @@ export default function DeployPage() {
                 style={{ minHeight: 180 }}
               >
                 {status === "success" && deployUrl ? (
+                  /* ── Live preview iframe (like Vercel) ── */
                   <div className="relative w-full flex flex-col flex-1">
                     <PreviewFrame url={deployUrl} />
                   </div>
                 ) : (
+                  /* ── Animated canvas while idle / deploying / error ── */
                   <div
                     className="relative w-full h-full"
                     style={{ minHeight: 180 }}
@@ -687,6 +374,7 @@ export default function DeployPage() {
                 </span>
               </button>
 
+              {/* Re-open modal */}
               {status === "success" && !showModal && (
                 <button
                   onClick={() => setShowModal(true)}
@@ -725,7 +413,9 @@ export default function DeployPage() {
               className="log-scroll overflow-y-auto px-5 py-4 font-mono"
               style={{ height: 320, backgroundColor: "#080808" }}
             >
+              {/* ── FIX 2: show init logs during init phase, real logs after ── */}
               {!hasDeployed ? (
+                // Not started yet
                 <div className="h-full flex flex-col items-center justify-center gap-2 select-none">
                   <svg
                     width="28"
@@ -755,6 +445,7 @@ export default function DeployPage() {
                   </span>
                 </div>
               ) : realLogsStarted ? (
+                // Real logs from socket
                 <div className="flex flex-col gap-0.5">
                   {logs.map((line, i) => (
                     <LogLine key={i} line={line} />
@@ -762,10 +453,12 @@ export default function DeployPage() {
                   <div ref={logsEndRef} />
                 </div>
               ) : (
+                // Init phase — show dripping init messages
                 <div className="flex flex-col gap-0.5">
-                  {initLogs.map((line, i) => (
+                  {allInitLogs.map((line, i) => (
                     <LogLine key={i} line={line} isInit />
                   ))}
+                  {/* Blinking cursor to show it's alive */}
                   <div className="flex gap-2 mt-1">
                     <span className="text-[#2a2a2a] text-[11px]">›</span>
                     <span
@@ -776,6 +469,12 @@ export default function DeployPage() {
                     </span>
                   </div>
                   <div ref={logsEndRef} />
+                  <style>{`
+                    @keyframes blink {
+                      0%, 100% { opacity: 1; }
+                      50% { opacity: 0; }
+                    }
+                  `}</style>
                 </div>
               )}
             </div>

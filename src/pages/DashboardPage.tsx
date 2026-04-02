@@ -3,8 +3,9 @@ import { useEffect, useState, useRef } from "react";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import logo from "../assets/cloudkit.png";
-import api from "../config/api-client"
+import api from "../config/api-client";
 import { toast } from "sonner";
+import Navbar from "@/components/navbar/Navbar";
 
 // ── Cloud / floating orbs canvas animation ────────────────────────────────
 
@@ -203,21 +204,18 @@ const PAGE_SIZE = 5;
 export default function DashboardPage() {
   const [repos, setRepos] = useState<any[]>([]);
   const [user, setUser] = useState<any>(null);
-  const [showUserMenu, setShowUserMenu] = useState(false);
   const [page, setPage] = useState(0); // 0-indexed
   const [search, setSearch] = useState("");
 
   const fetchUser = async () => {
     try {
-      const res = await api.get(
-        `${import.meta.env.VITE_BACKEND_URI}/auth/me`,
-        {
-          withCredentials: true,
-        },
-      );
-      console.log(res) ;
+      const res = await api.get(`${import.meta.env.VITE_BACKEND_URI}/auth/me`, {
+        withCredentials: true,
+      });
+      console.log(res);
       setUser(res.data);
-      if(res.status===200) toast(`Loaded ${res?.data?.repos?.length} public repositories`)
+      if (res.status === 200)
+        toast(`Loaded ${res?.data?.repos?.length} public repositories`);
       setRepos(res.data.repos || []);
     } catch (err) {
       console.log(err);
@@ -305,82 +303,11 @@ export default function DashboardPage() {
         style={{
           fontFamily: "'Geist', -apple-system, BlinkMacSystemFont, sans-serif",
         }}
-        onClick={() => showUserMenu && setShowUserMenu(false)}
       >
-        {/* ── Topbar ── */}
-        <header className="h-14 border-b border-[#1f1f1f] flex items-center justify-between px-6 sticky top-0 z-50 bg-[rgba(10,10,10,0.85)] backdrop-blur-md">
-          <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold text-black bg-gradient-to-br from-white to-[#888]">
-              <img src={logo} alt="error" />
-            </div>
-            <span className="text-[15px] font-semibold tracking-tight text-[#ededed]">
-              cloudKit
-            </span>
-          </div>
-
-          <div className="relative" onClick={(e) => e.stopPropagation()}>
-            <button
-              className="flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg border border-transparent bg-transparent text-[#ededed] cursor-pointer transition-all duration-150 hover:bg-[#1a1a1a] hover:border-[#2a2a2a]"
-              onClick={() => setShowUserMenu(!showUserMenu)}
-            >
-              <div className="w-[30px] h-[30px] rounded-full bg-gradient-to-br from-indigo-500 to-violet-500 flex items-center justify-center text-[11px] font-semibold text-white flex-shrink-0 overflow-hidden">
-                {user?.avatar_url ? (
-                  <img
-                    src={user.avatar_url}
-                    alt={initials}
-                    className="w-full h-full object-cover rounded-full"
-                  />
-                ) : (
-                  initials
-                )}
-              </div>
-              <div className="hidden sm:flex flex-col items-start leading-tight">
-                <span className="text-[13px] font-medium text-[#ededed]">
-                  {user?.fullname ?? "Loading…"}
-                </span>
-                <span className="text-[11px] text-[#666]">
-                  {user?.email ?? ""}
-                </span>
-              </div>
-              <span
-                className="text-[10px] text-[#555] transition-transform duration-200"
-                style={{
-                  display: "inline-block",
-                  transform: showUserMenu ? "rotate(180deg)" : "rotate(0deg)",
-                }}
-              >
-                ▾
-              </span>
-            </button>
-
-            {showUserMenu && (
-              <div className="animate-dropIn absolute top-[calc(100%+6px)] right-0 min-w-[200px] bg-[#111] border border-[#222] rounded-[10px] overflow-hidden shadow-[0_8px_32px_rgba(0,0,0,0.5)]">
-                <div className="px-3.5 py-3 border-b border-[#1e1e1e]">
-                  <div className="text-[13px] font-medium text-[#ededed]">
-                    {user?.fullname}
-                  </div>
-                  <div className="text-[11px] text-[#555] mt-0.5">
-                    {user?.email}
-                  </div>
-                </div>
-                <Link to="/my-project">               
-                <div className="flex items-center gap-2.5 px-3.5 py-2.5 text-[13px] text-[#aaa] cursor-pointer hover:bg-[#1a1a1a] hover:text-[#ededed] transition-colors duration-100">
-                  <span>📁</span> Projects
-                </div>
-                </Link>
-                <div
-                  className="flex items-center gap-2.5 px-3.5 py-2.5 text-[13px] text-red-400 cursor-pointer border-t border-[#1e1e1e] hover:bg-red-400/[0.08] transition-colors duration-100"
-                  onClick={handleLogout}
-                >
-                  <span>↩</span> Log out
-                </div>
-              </div>
-            )}
-          </div>
-        </header>
+        <Navbar variant="auth" user={user} onLogout={handleLogout} scrolled />
 
         {/* ── Main ── */}
-        <main className="max-w-[1200px] mx-auto px-6 pt-12 pb-16">
+        <main className="max-w-[1200px] mx-auto px-6 pt-[76px] pb-16">
           {/* Hero */}
           <div className="mb-12">
             <h1 className="text-[32px] font-semibold tracking-[-0.8px] text-[#ededed] leading-[1.15]">
