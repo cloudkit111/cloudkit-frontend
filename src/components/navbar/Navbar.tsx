@@ -108,7 +108,7 @@ export default function Navbar({
               color: "#fff",
             }}
           >
-            cloudKit
+            CloudKit
           </span>
         </Link>
 
