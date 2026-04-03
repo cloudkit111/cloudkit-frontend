@@ -18,16 +18,15 @@ function CloudCanvas() {
     const canvas = canvasRef.current!;
     const dpr = window.devicePixelRatio || 1;
 
-    // --- particle data ---
     type Particle = {
       x: number;
       y: number;
       vx: number;
       vy: number;
-      r: number; // radius
+      r: number;
       hue: number;
       alpha: number;
-      pulse: number; // personal phase offset
+      pulse: number;
     };
 
     type Cloud = {
@@ -35,7 +34,7 @@ function CloudCanvas() {
       y: number;
       vx: number;
       w: number;
-      h: number; // semi-axes
+      h: number;
       hue: number;
       alpha: number;
     };
@@ -56,18 +55,16 @@ function CloudCanvas() {
     };
 
     const init = () => {
-      // soft glowing cloud blobs
       clouds = Array.from({ length: 5 }, (_, i) => ({
         x: (i / 4) * W * 1.2 - W * 0.1,
         y: H * 0.3 + Math.random() * H * 0.4,
         vx: 0.18 + Math.random() * 0.12,
         w: W * (0.18 + Math.random() * 0.14),
         h: H * (0.22 + Math.random() * 0.18),
-        hue: 200 + Math.random() * 60, // blue → violet
+        hue: 200 + Math.random() * 60,
         alpha: 0.1 + Math.random() * 0.08,
       }));
 
-      // tiny star-like floating particles
       particles = Array.from({ length: 55 }, () => ({
         x: Math.random() * W,
         y: Math.random() * H,
@@ -87,7 +84,6 @@ function CloudCanvas() {
       const ctx = canvas.getContext("2d")!;
       ctx.clearRect(0, 0, W, H);
 
-      // ── background gradient ──────────────────────────────────────────
       const bgG = ctx.createLinearGradient(0, 0, W, H);
       bgG.addColorStop(0, "#07080f");
       bgG.addColorStop(0.5, "#090b16");
@@ -95,12 +91,10 @@ function CloudCanvas() {
       ctx.fillStyle = bgG;
       ctx.fillRect(0, 0, W, H);
 
-      // ── drifting cloud blobs ─────────────────────────────────────────
       clouds.forEach((c) => {
         c.x += c.vx;
-        if (c.x - c.w > W) c.x = -c.w; // wrap around
+        if (c.x - c.w > W) c.x = -c.w;
 
-        // slow vertical bob
         const bobY = c.y + Math.sin(t * 0.25 + c.hue) * H * 0.04;
 
         const g = ctx.createRadialGradient(
@@ -116,7 +110,7 @@ function CloudCanvas() {
         g.addColorStop(1, `hsla(${c.hue}, 60%, 30%, 0)`);
 
         ctx.save();
-        ctx.scale(1, c.h / c.w); // squash into ellipse
+        ctx.scale(1, c.h / c.w);
         ctx.beginPath();
         ctx.arc(c.x, bobY * (c.w / c.h), c.w, 0, Math.PI * 2);
         ctx.fillStyle = g;
@@ -124,7 +118,6 @@ function CloudCanvas() {
         ctx.restore();
       });
 
-      // ── connection lines between nearby particles ────────────────────
       for (let i = 0; i < particles.length; i++) {
         for (let j = i + 1; j < particles.length; j++) {
           const dx = particles[i].x - particles[j].x;
@@ -142,7 +135,6 @@ function CloudCanvas() {
         }
       }
 
-      // ── particles ────────────────────────────────────────────────────
       particles.forEach((p) => {
         p.x += p.vx;
         p.y += p.vy;
@@ -166,7 +158,6 @@ function CloudCanvas() {
         ctx.fill();
       });
 
-      // ── subtle horizontal scan line shimmer ──────────────────────────
       const scanY = ((t * 28) % (H + 40)) - 20;
       const scanG = ctx.createLinearGradient(0, scanY - 20, 0, scanY + 20);
       scanG.addColorStop(0, "transparent");
@@ -204,8 +195,13 @@ const PAGE_SIZE = 5;
 export default function DashboardPage() {
   const [repos, setRepos] = useState<any[]>([]);
   const [user, setUser] = useState<any>(null);
-  const [page, setPage] = useState(0); // 0-indexed
+  const [page, setPage] = useState(0);
   const [search, setSearch] = useState("");
+
+  // ✅ FIX: ref to block the "install GitHub App" redirect while save is in progress
+  const isSavingInstall = useRef(false);
+
+  const navigate = useNavigate();
 
   const fetchUser = async () => {
     try {
@@ -217,6 +213,7 @@ export default function DashboardPage() {
       if (res.status === 200)
         toast(`Loaded ${res?.data?.repos?.length} public repositories`);
       setRepos(res.data.repos || []);
+      return res.data;
     } catch (err) {
       console.log(err);
     }
@@ -232,8 +229,6 @@ export default function DashboardPage() {
       console.log(err);
     }
   };
-
-  const navigate = useNavigate();
 
   const handleImport = (repo: any) => {
     try {
@@ -256,9 +251,68 @@ export default function DashboardPage() {
     });
   };
 
+  // ✅ FIX: single useEffect handles everything in correct order
   useEffect(() => {
-    fetchUser();
+    const init = async () => {
+      // Step 1: fetch user first — confirms cookie is valid
+      const userData = await fetchUser();
+
+      if (!userData) return; // not logged in
+
+      // Step 2: check for installation_id in URL
+      const params = new URLSearchParams(window.location.search);
+      const installationId = params.get("installation_id");
+
+      if (installationId) {
+        isSavingInstall.current = true; // 🔒 block redirect while saving
+        const toastId = toast.loading("Saving installation...");
+
+        try {
+          await api.post(
+            `${import.meta.env.VITE_BACKEND_URI}/api/save-installation`,
+            { installationId },
+            { withCredentials: true }
+          );
+
+          toast.dismiss(toastId);
+          toast.success("GitHub App installed successfully!");
+
+          // Step 3: refresh user data to get updated repos
+          await fetchUser();
+
+          // Step 4: clean URL
+          window.history.replaceState({}, "", window.location.pathname);
+        } catch (err) {
+          console.error("Failed to save installation:", err);
+          toast.dismiss(toastId);
+          toast.error("Failed to save installation. Please try again.");
+        } finally {
+          // ✅ FIX: always unblock, whether save succeeded or failed
+          isSavingInstall.current = false;
+        }
+      }
+    };
+
+    init();
   }, []);
+
+  // ✅ FIX: guard the redirect with the saving ref AND the URL param check
+  useEffect(() => {
+    if (user && !user.installationId) {
+      // Don't redirect if a save is actively in progress
+      if (isSavingInstall.current) return;
+
+      // Don't redirect if installation_id is still in the URL
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("installation_id")) return;
+
+      toast.info("Please install the CloudKit GitHub App to continue");
+      setTimeout(() => {
+        window.location.href =
+          "https://github.com/apps/cloudkit11/installations/new";
+      }, 2000);
+    }
+  }, [user]);
 
   const totalPages = Math.ceil(repos.length / PAGE_SIZE);
   const filteredRepos = repos.filter((r: any) =>
@@ -377,7 +431,6 @@ export default function DashboardPage() {
 
               {/* GitHub account selector + Search bar */}
               <div className="flex gap-2 mb-3">
-                {/* Account selector */}
                 <div
                   className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl border border-[#222] bg-[#111] min-w-0 flex-shrink-0"
                   style={{ minWidth: 0, width: "48%" }}
@@ -411,7 +464,6 @@ export default function DashboardPage() {
                   </svg>
                 </div>
 
-                {/* Search box */}
                 <div className="flex items-center gap-2 px-3 py-2.5 rounded-xl border border-[#222] bg-[#111] flex-1 transition-colors duration-150 focus-within:border-[#333]">
                   <svg
                     width="14"
@@ -542,7 +594,6 @@ export default function DashboardPage() {
                     ← Prev
                   </button>
 
-                  {/* Page dots */}
                   <div className="flex items-center gap-1.5">
                     {Array.from({ length: filteredPages }).map((_, idx) => (
                       <button
@@ -580,14 +631,12 @@ export default function DashboardPage() {
                 </span>
               </div>
 
-              {/* Canvas panel */}
               <div
                 className="relative rounded-xl overflow-hidden border border-[#1e1e1e] bg-[#07080f]"
                 style={{ height: 320 }}
               >
                 <CloudCanvas />
 
-                {/* Floating label overlay */}
                 <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none select-none">
                   <div className="text-[11px] tracking-[0.2em] uppercase text-[#ffffff18] font-medium mb-2">
                     Powered by
@@ -608,7 +657,6 @@ export default function DashboardPage() {
                   </div>
                 </div>
 
-                {/* Bottom stats bar */}
                 <div className="absolute bottom-0 left-0 right-0 flex items-center justify-around px-4 py-3 border-t border-[#ffffff08] bg-[rgba(7,8,15,0.7)] backdrop-blur-sm">
                   {[
                     { label: "Regions", value: "32" },
