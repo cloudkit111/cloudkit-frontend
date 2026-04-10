@@ -6,6 +6,8 @@ import logo from "../assets/cloudkit.png";
 import api from "../config/api-client";
 import { toast } from "sonner";
 import Navbar from "@/components/navbar/Navbar";
+import Search from "@/assets/svg/Search";
+import Private from "@/assets/svg/Private";
 
 // ── Cloud / floating orbs canvas animation ────────────────────────────────
 
@@ -198,7 +200,6 @@ export default function DashboardPage() {
   const [page, setPage] = useState(0);
   const [search, setSearch] = useState("");
 
-  // ✅ FIX: ref to block the "install GitHub App" redirect while save is in progress
   const isSavingInstall = useRef(false);
 
   const navigate = useNavigate();
@@ -251,7 +252,7 @@ export default function DashboardPage() {
     });
   };
 
-  // ✅ FIX: single useEffect handles everything in correct order
+  // FIX: single useEffect handles everything in correct order
   useEffect(() => {
     const init = async () => {
       // Step 1: fetch user first — confirms cookie is valid
@@ -277,17 +278,13 @@ export default function DashboardPage() {
           toast.dismiss(toastId);
           toast.success("GitHub App installed successfully!");
 
-          // Step 3: refresh user data to get updated repos
           await fetchUser();
-
-          // Step 4: clean URL
           window.history.replaceState({}, "", window.location.pathname);
         } catch (err) {
           console.error("Failed to save installation:", err);
           toast.dismiss(toastId);
           toast.error("Failed to save installation. Please try again.");
         } finally {
-          // ✅ FIX: always unblock, whether save succeeded or failed
           isSavingInstall.current = false;
         }
       }
@@ -296,7 +293,6 @@ export default function DashboardPage() {
     init();
   }, []);
 
-  // ✅ FIX: guard the redirect with the saving ref AND the URL param check
   useEffect(() => {
     if (user && !user.installationId) {
       // Don't redirect if a save is actively in progress
@@ -326,11 +322,11 @@ export default function DashboardPage() {
 
   const initials = user
     ? user.fullname
-        ?.split(" ")
-        .map((n: string) => n[0])
-        .join("")
-        .toUpperCase()
-        .slice(0, 2)
+      ?.split(" ")
+      .map((n: string) => n[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2)
     : "??";
 
   return (
@@ -352,331 +348,164 @@ export default function DashboardPage() {
         }
       `}</style>
 
-      <div
-        className="min-h-screen bg-[#0a0a0a] text-[#ededed]"
-        style={{
-          fontFamily: "'Geist', -apple-system, BlinkMacSystemFont, sans-serif",
-        }}
-      >
+      <div className="bg-[#0a0a0a] text-white min-h-screen flex flex-col">
         <Navbar variant="auth" user={user} onLogout={handleLogout} scrolled />
 
         {/* ── Main ── */}
-        <main className="max-w-[1200px] mx-auto px-6 pt-[76px] pb-16">
-          {/* Hero */}
-          <div className="mb-12">
-            <h1 className="text-[32px] font-semibold tracking-[-0.8px] text-[#ededed] leading-[1.15]">
-              Let's build something new.
-            </h1>
-            <p className="text-sm text-[#555] mt-1.5">
-              Deploy a new project or import an existing repository.
-            </p>
-          </div>
-
-          {/* Prompt Bar */}
-          <div className="flex items-center gap-3 bg-[#111] border border-[#222] rounded-[10px] px-4 py-3 mb-5 transition-colors duration-200 focus-within:border-[#444]">
-            <svg
-              className="text-[#444] flex-shrink-0"
-              width="15"
-              height="15"
-              viewBox="0 0 15 15"
-              fill="none"
-            >
-              <path
-                d="M7.5 1L14 7.5L7.5 14M1 7.5h13"
-                stroke="currentColor"
-                strokeWidth="1.2"
-                strokeLinecap="round"
-              />
-            </svg>
-            <input
-              className="flex-1 bg-transparent border-none outline-none text-[#ededed] text-sm placeholder-[#444]"
-              style={{ fontFamily: "inherit" }}
-              placeholder="Ask to build or enter a Git repository URL…"
-            />
-          </div>
-
-          {/* Shortcut Pills */}
-          <div className="flex gap-2 flex-wrap mb-12">
-            {[
-              { icon: "✉", label: "Contact Form" },
-              { icon: "🖼", label: "Image Editor" },
-              { icon: "🎮", label: "Mini Game" },
-              { icon: "📊", label: "Finance Calculator" },
-            ].map((p) => (
-              <button
-                key={p.label}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-[#1e1e1e] bg-[#111] text-xs text-[#888] cursor-pointer transition-all duration-150 hover:border-[#333] hover:text-[#ccc] hover:bg-[#161616]"
-              >
-                <span>{p.icon}</span> {p.label}
-              </button>
-            ))}
-          </div>
-
-          {/* Two-column grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {/* LEFT – Repos */}
-            <div>
-              <div className="flex items-center justify-between mb-4">
-                <span className="text-base font-semibold text-[#ededed] tracking-tight">
-                  Import Git Repository
-                </span>
-                {filteredRepos.length > 0 && (
-                  <span className="text-[11px] text-[#444]">
-                    {page * PAGE_SIZE + 1}–
-                    {Math.min((page + 1) * PAGE_SIZE, filteredRepos.length)} of{" "}
-                    {filteredRepos.length}
-                  </span>
-                )}
-              </div>
-
-              {/* GitHub account selector + Search bar */}
-              <div className="flex gap-2 mb-3">
-                <div
-                  className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl border border-[#222] bg-[#111] min-w-0 flex-shrink-0"
-                  style={{ minWidth: 0, width: "48%" }}
-                >
-                  <svg
-                    width="16"
-                    height="16"
-                    viewBox="0 0 24 24"
-                    fill="currentColor"
-                    className="text-[#888] flex-shrink-0"
-                  >
-                    <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z" />
-                  </svg>
-                  <span className="text-[13px] text-[#ccc] truncate flex-1">
-                    {user?.username ?? user?.fullname ?? "Loading…"}
-                  </span>
-                  <svg
-                    width="12"
-                    height="12"
-                    viewBox="0 0 12 12"
-                    fill="none"
-                    className="text-[#555] flex-shrink-0"
-                  >
-                    <path
-                      d="M2 4l4 4 4-4"
-                      stroke="currentColor"
-                      strokeWidth="1.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                </div>
-
-                <div className="flex items-center gap-2 px-3 py-2.5 rounded-xl border border-[#222] bg-[#111] flex-1 transition-colors duration-150 focus-within:border-[#333]">
-                  <svg
-                    width="14"
-                    height="14"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    className="text-[#555] flex-shrink-0"
-                  >
-                    <circle
-                      cx="11"
-                      cy="11"
-                      r="7"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                    />
-                    <path
-                      d="M16.5 16.5L21 21"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                    />
-                  </svg>
-                  <input
-                    className="flex-1 bg-transparent border-none outline-none text-[13px] text-[#ccc] placeholder-[#444]"
-                    style={{ fontFamily: "inherit" }}
-                    placeholder="Search…"
-                    value={search}
-                    onChange={(e) => {
-                      setSearch(e.target.value);
-                      setPage(0);
-                    }}
-                  />
-                </div>
-              </div>
-
-              {/* Repo rows */}
-              <div className="flex flex-col gap-0.5">
-                {repos.length === 0 ? (
-                  [1, 2, 3, 4, 5].map((i) => (
-                    <div
-                      key={i}
-                      className="flex items-center gap-3 px-3.5 py-3"
-                    >
-                      <div className="animate-shimmer w-8 h-8 rounded-lg flex-shrink-0" />
-                      <div className="flex-1 flex flex-col gap-1.5">
-                        <div
-                          className="animate-shimmer h-3 rounded"
-                          style={{ width: "55%" }}
-                        />
-                        <div
-                          className="animate-shimmer h-2.5 rounded"
-                          style={{ width: "30%" }}
-                        />
-                      </div>
-                    </div>
-                  ))
-                ) : visibleRepos.length === 0 ? (
-                  <div className="px-3.5 py-8 text-center text-[13px] text-[#444]">
-                    No repositories match "
-                    <span className="text-[#666]">{search}</span>"
-                  </div>
-                ) : (
-                  visibleRepos.map((repo: any, i: number) => (
-                    <div
-                      key={i}
-                      className="flex items-center justify-between px-3.5 py-3 rounded-lg border border-transparent cursor-pointer transition-all duration-150 hover:bg-[#111] hover:border-[#1e1e1e]"
-                      onClick={() => handleImport(repo)}
-                    >
-                      <div className="flex items-center gap-3 min-w-0">
-                        <div className="min-w-0 flex items-center gap-1.5 flex-wrap">
-                          <span className="text-[13px] font-medium text-[#ccc] truncate">
-                            {repo.name}
-                          </span>
-                          {repo.private && (
-                            <svg
-                              width="12"
-                              height="12"
-                              viewBox="0 0 24 24"
-                              fill="none"
-                              className="text-[#555] flex-shrink-0"
-                            >
-                              <rect
-                                x="3"
-                                y="11"
-                                width="18"
-                                height="11"
-                                rx="2"
-                                stroke="currentColor"
-                                strokeWidth="2"
-                              />
-                              <path
-                                d="M7 11V7a5 5 0 0 1 10 0v4"
-                                stroke="currentColor"
-                                strokeWidth="2"
-                                strokeLinecap="round"
-                              />
-                            </svg>
-                          )}
-                          {repo.created_at && (
-                            <span className="text-[13px] text-[#555]">
-                              · {formatDate(repo.created_at)}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                      <button
-                        className="px-3 py-1 rounded-md border border-[#2a2a2a] bg-[#1a1a1a] text-[#ccc] text-xs font-medium cursor-pointer flex-shrink-0 transition-all duration-150 hover:bg-[#222] hover:border-[#3a3a3a] hover:text-[#ededed]"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleImport(repo);
-                        }}
-                      >
-                        Import
-                      </button>
-                    </div>
-                  ))
-                )}
-              </div>
-
-              {/* Pagination */}
-              {filteredPages > 1 && (
-                <div className="flex items-center justify-between mt-4 pt-3 border-t border-[#1a1a1a]">
-                  <button
-                    disabled={page === 0}
-                    onClick={() => setPage((p) => p - 1)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#222] bg-[#111] text-xs text-[#666] cursor-pointer transition-all duration-150 disabled:opacity-30 disabled:cursor-not-allowed"
-                  >
-                    ← Prev
-                  </button>
-
-                  <div className="flex items-center gap-1.5">
-                    {Array.from({ length: filteredPages }).map((_, idx) => (
-                      <button
-                        key={idx}
-                        onClick={() => setPage(idx)}
-                        className={`h-1.5 rounded-full transition-all duration-150 cursor-pointer border-0 p-0 ${
-                          idx === page
-                            ? "bg-[#888] w-4"
-                            : "bg-[#333] w-1.5 hover:bg-[#555]"
-                        }`}
-                      />
-                    ))}
-                  </div>
-
-                  <button
-                    disabled={page === filteredPages - 1}
-                    onClick={() => setPage((p) => p + 1)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#222] bg-[#111] text-xs text-[#666] cursor-pointer transition-all duration-150 disabled:opacity-30 disabled:cursor-not-allowed"
-                  >
-                    Next →
-                  </button>
-                </div>
-              )}
+        <main className="flex-1 flex items-center justify-center px-20">
+          <div className="w-full max-w-4xl">
+            <div className="mb-12">
+              <h1 className="md:text-5xl mt-20 font-semibold tracking-[-0.8px] text-white leading-[1.15]">
+                Let's build something new.
+              </h1>
+              <p className="text-3xl text-white mt-1.5">
+                Deploy a new project or import an existing repository.
+              </p>
             </div>
 
-            {/* RIGHT – Cloud Animation Panel */}
-            <div>
-              <div className="flex items-center justify-between mb-4">
-                <span className="text-base font-semibold text-[#ededed] tracking-tight">
-                  Live Environment
-                </span>
-                <span className="flex items-center gap-1.5 text-[11px] text-[#3a3a3a]">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse inline-block" />
-                  All systems operational
-                </span>
-              </div>
+            <div className="">
+              <div>
+                <div className="flex items-center justify-between mb-4">
+                  <span className="text-base font-semibold text-white tracking-tight">
+                    Import Git Repository
+                  </span>
+                  {filteredRepos.length > 0 && (
+                    <span className="text-base text-white">
+                      {page * PAGE_SIZE + 1}–
+                      {Math.min((page + 1) * PAGE_SIZE, filteredRepos.length)} of{" "}
+                      {filteredRepos.length}
+                    </span>
+                  )}
+                </div>
 
-              <div
-                className="relative rounded-xl overflow-hidden border border-[#1e1e1e] bg-[#07080f]"
-                style={{ height: 320 }}
-              >
-                <CloudCanvas />
-
-                <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none select-none">
-                  <div className="text-[11px] tracking-[0.2em] uppercase text-[#ffffff18] font-medium mb-2">
-                    Powered by
-                  </div>
+                {/* GitHub account selector + Search bar */}
+                <div className="flex gap-2 mb-3">
                   <div
-                    className="text-[28px] font-semibold tracking-tight"
-                    style={{
-                      background:
-                        "linear-gradient(135deg, #a78bfa 0%, #60a5fa 50%, #34d399 100%)",
-                      WebkitBackgroundClip: "text",
-                      WebkitTextFillColor: "transparent",
-                    }}
+                    className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl border border-[#222] bg-[#111] min-w-0 flex-shrink-0"
+                    style={{ minWidth: 0, width: "48%" }}
                   >
-                    DeployKit Cloud
+                    <svg
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="currentColor"
+                      className="text-white flex-shrink-0"
+                    >
+                      <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z" />
+                    </svg>
+                    <span className="text-base text-white truncate flex-1">
+                      {user?.username ?? user?.fullname ?? "Loading…"}
+                    </span>
                   </div>
-                  <div className="text-[12px] text-[#ffffff22] mt-1.5">
-                    Edge network · 99.98% uptime · Global CDN
+
+                  <div className="flex items-center gap-2 px-3 py-2.5 rounded-xl border border-[#222] bg-[#111] flex-1 transition-colors duration-150 focus-within:border-[#333]">
+                    <Search />
+                    <input
+                      className="flex-1 bg-transparent border-none outline-none text-[13px] text-white placeholder-[#444]"
+                      style={{ fontFamily: "inherit" }}
+                      placeholder="Search.."
+                      value={search}
+                      onChange={(e) => {
+                        setSearch(e.target.value);
+                        setPage(0);
+                      }}
+                    />
                   </div>
                 </div>
 
-                <div className="absolute bottom-0 left-0 right-0 flex items-center justify-around px-4 py-3 border-t border-[#ffffff08] bg-[rgba(7,8,15,0.7)] backdrop-blur-sm">
-                  {[
-                    { label: "Regions", value: "32" },
-                    { label: "Latency", value: "12ms" },
-                    { label: "Uptime", value: "99.98%" },
-                    { label: "Deploys", value: "∞" },
-                  ].map(({ label, value }) => (
-                    <div
-                      key={label}
-                      className="flex flex-col items-center gap-0.5"
-                    >
-                      <span className="text-[13px] font-semibold text-[#d0d0d0]">
-                        {value}
-                      </span>
-                      <span className="text-[10px] text-[#444] uppercase tracking-wide">
-                        {label}
-                      </span>
+                {/* Repo rows */}
+                <div className="flex flex-col gap-0.5">
+                  {repos.length === 0 ? (
+                    [1, 2, 3, 4, 5].map((i) => (
+                      <div
+                        key={i}
+                        className="flex items-center gap-3 px-3.5 py-3"
+                      >
+                        <div className="animate-shimmer w-8 h-8 rounded-lg flex-shrink-0" />
+                        <div className="flex-1 flex flex-col gap-1.5">
+                          <div
+                            className="animate-shimmer h-3 rounded"
+                            style={{ width: "55%" }}
+                          />
+                          <div
+                            className="animate-shimmer h-2.5 rounded"
+                            style={{ width: "30%" }}
+                          />
+                        </div>
+                      </div>
+                    ))
+                  ) : visibleRepos.length === 0 ? (
+                    <div className="px-3.5 py-8 text-center text-base text-white">
+                      No repositories match "
+                      <span className="text-white">{search}</span>"
                     </div>
-                  ))}
+                  ) : (
+                    visibleRepos.map((repo: any, i: number) => (
+                      <div
+                        key={i}
+                        className="flex items-center justify-between px-3.5 py-3 rounded-lg border border-transparent cursor-pointer transition-all duration-150 hover:bg-[#111] hover:border-[#1e1e1e]"
+                        onClick={() => handleImport(repo)}
+                      >
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div className="min-w-0 flex items-center gap-1.5 flex-wrap">
+                            <span className="text-base font-medium text-white truncate">
+                              {repo.name}
+                            </span>
+                            {repo.private && (<Private />)}
+                            {repo.created_at && (
+                              <span className="text-[13px] text-white">
+                                · {formatDate(repo.created_at)}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        <button
+                          className="px-3 py-1 rounded-md border border-[#2a2a2a] bg-white text-black text-base font-medium cursor-pointer flex-shrink-0 transition-all duration-150"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleImport(repo);
+                          }}
+                        >
+                          Import
+                        </button>
+                      </div>
+                    ))
+                  )}
                 </div>
+
+                {/* Pagination */}
+                {filteredPages > 1 && (
+                  <div className="flex items-center justify-between mt-4 pt-3 border-t border-[#1a1a1a]">
+                    <button
+                      disabled={page === 0}
+                      onClick={() => setPage((p) => p - 1)}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#222] bg-[#111] text-base text-white cursor-pointer transition-all duration-150 disabled:opacity-30 disabled:cursor-not-allowed"
+                    >
+                      ← Prev
+                    </button>
+
+                    <div className="flex items-center gap-1.5">
+                      {Array.from({ length: filteredPages }).map((_, idx) => (
+                        <button
+                          key={idx}
+                          onClick={() => setPage(idx)}
+                          className={`h-1.5 rounded-full transition-all duration-150 cursor-pointer border-0 p-0 ${idx === page
+                            ? "bg-[#888] w-4"
+                            : "bg-[#333] w-1.5 hover:bg-[#555]"
+                            }`}
+                        />
+                      ))}
+                    </div>
+
+                    <button
+                      disabled={page === filteredPages - 1}
+                      onClick={() => setPage((p) => p + 1)}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#222] bg-[#111] text-base text-white cursor-pointer transition-all duration-150 disabled:opacity-30 disabled:cursor-not-allowed"
+                    >
+                      Next →
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           </div>

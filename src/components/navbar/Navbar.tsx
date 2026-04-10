@@ -261,7 +261,7 @@ export default function Navbar({
                 </div>
 
                 {/* Projects */}
-                <Link to="/my-project" style={{ textDecoration: "none" }}>
+                <Link to="/projects" style={{ textDecoration: "none" }}>
                   <div
                     style={{
                       display: "flex",

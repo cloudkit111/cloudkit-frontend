@@ -11,6 +11,7 @@ import { StatusBadge } from "@/components/ui/StatusBadge";
 import { LogLine } from "@/components/ui/LogLine";
 import SuccessModal from "@/components/ui/SucessModal";
 import PreviewFrame from "@/components/preview/PreviewFrame";
+import { CircleArrowLeftDoubleIcon } from "@hugeicons/core-free-icons";
 
 // ── Init log messages shown before real logs arrive ───────────────────────
 const INIT_MESSAGES = [
@@ -444,14 +445,14 @@ export default function DeployPage() {
                       {customSlugError ? (
                         <span className="text-[11px] text-[#e24b4a] pl-1 flex items-center gap-1">
                           <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" />
                           </svg>
                           {customSlugError}
                         </span>
                       ) : customSlug ? (
                         <span className="text-[11px] text-emerald-600 pl-1 flex items-center gap-1 font-mono">
                           <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+                            <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
                           </svg>
                           {customSlug}.cloud-kit.app
                         </span>
@@ -524,7 +525,7 @@ export default function DeployPage() {
                           {rawEnvError && (
                             <span className="text-[11px] text-[#e24b4a] pl-1 flex items-center gap-1">
                               <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor">
-                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" />
                               </svg>
                               {rawEnvError}
                             </span>
@@ -665,46 +666,33 @@ export default function DeployPage() {
                 )}
               </div>
 
-              {/* Deploy button */}
               <button
                 onClick={handleDeploy}
                 disabled={hasDeployed}
-                className="relative w-full py-3.5 rounded-xl text-[14px] font-semibold tracking-tight transition-all duration-200 overflow-hidden"
+                className="px-3 py-3 rounded-md border border-[#2a2a2a] bg-white text-black text-base font-medium flex items-center justify-center gap-2 transition-all duration-150"
                 style={{
-                  background: hasDeployed
-                    ? "#1a1a1a"
-                    : "linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #06b6d4 100%)",
-                  color: hasDeployed ? "#444" : "#fff",
-                  border: hasDeployed ? "1px solid #222" : "none",
                   cursor: hasDeployed ? "not-allowed" : "pointer",
-                  boxShadow: hasDeployed ? "none" : "0 0 32px rgba(99,102,241,0.3)",
+                  opacity: hasDeployed ? 0.6 : 1,
                 }}
               >
-                {!hasDeployed && (
-                  <span
-                    className="absolute inset-0 opacity-0 hover:opacity-100 transition-opacity duration-200"
-                    style={{ background: "linear-gradient(135deg, #818cf8 0%, #a78bfa 50%, #22d3ee 100%)" }}
-                  />
-                )}
-                <span className="relative z-10 flex items-center justify-center gap-2">
-                  {hasDeployed ? (
-                    status === "deploying" ? (
-                      <>
-                        <span className="w-3.5 h-3.5 border-2 border-[#555] border-t-[#888] rounded-full animate-spin inline-block" />
-                        Deploying…
-                      </>
-                    ) : status === "success" ? "✓ Deployed"
-                      : status === "error" ? "✗ Failed"
-                      : "Deployed"
-                  ) : (
+                {hasDeployed ? (
+                  status === "deploying" ? (
                     <>
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" className="flex-shrink-0">
-                        <path d="M12 3L20 12H15V21H9V12H4L12 3Z" fill="currentColor" />
-                      </svg>
-                      Deploy Now
+                      <span className="w-3.5 h-3.5 border-2 border-[#555] border-t-[#888] rounded-full animate-spin inline-block" />
+                      Deploying…
                     </>
-                  )}
-                </span>
+                  ) : status === "success" ? (
+                    "✓ Deployed"
+                  ) : status === "error" ? (
+                    "✗ Failed"
+                  ) : (
+                    "Deployed"
+                  )
+                ) : (
+                  <>
+                    Deploy
+                  </>
+                )}
               </button>
 
               {status === "success" && !showModal && (

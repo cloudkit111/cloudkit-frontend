@@ -28,7 +28,7 @@ function App() {
           <Route path="/signup" element={<SignupPage />} />
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/deploy-project" element={<DeployPage />} />
-          <Route path="/my-project" element={<ProjectsPage />} />
+          <Route path="/projects" element={<ProjectsPage />} />
         </Routes>
       </ClickSpark>
     </>

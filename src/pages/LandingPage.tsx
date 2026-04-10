@@ -626,7 +626,7 @@ export default function LandingPage() {
                 colors={["#60a5fa", "#a78bfa", "#f472b6"]}
               >
                 <div
-                  className="ck-fade-up"
+                  className="ck-fade-up overflow-hidden"
                   style={{
                     padding: 28,
                     animationDelay: `${i * 0.08}s`,
