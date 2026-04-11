@@ -235,16 +235,16 @@ export default function DeployPage() {
       });
 
       const res = await api.post(
-        `${import.meta.env.VITE_BACKEND_URI}/project`,
-        {
-          gitURL: githubRepoURL,
-          repoName,
-          ...(subdomainMode === 'custom' && customSlug
-            ? { userSlug: customSlug }
-            : {}),
-          ...(Object.keys(envsObject).length > 0 ? { envs: envsObject } : {}),
-        },
-      );
+  `${import.meta.env.VITE_BACKEND_URI}/project`,
+  {
+    gitURL: githubRepoURL,
+    repoName,
+    envs: envsObject,  // ← Always send it, even if empty {}
+    ...(subdomainMode === 'custom' && customSlug
+      ? { userSlug: customSlug }
+      : {}),
+  },
+);
 
       const url =
         res?.data?.data?.url ??
