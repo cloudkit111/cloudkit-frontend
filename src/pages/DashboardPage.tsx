@@ -210,6 +210,7 @@ export default function DashboardPage() {
       const res = await fetchUserDetails();
       setUser(res?.data);
       setRepos(res?.data.repos || []);
+      return res?.data
     } catch (err) {
       console.log(err);
     }
