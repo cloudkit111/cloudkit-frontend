@@ -205,7 +205,7 @@ export default function DashboardPage() {
 
   const navigate = useNavigate();
 
-  const fetchUser = async () => {
+  const fetchUser = async (): Promise<any> => {
     try {
       const res = await fetchUserDetails();
       setUser(res?.data);
@@ -317,11 +317,11 @@ export default function DashboardPage() {
 
   const initials = user
     ? user.fullname
-        ?.split(' ')
-        .map((n: string) => n[0])
-        .join('')
-        .toUpperCase()
-        .slice(0, 2)
+      ?.split(' ')
+      .map((n: string) => n[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2)
     : '??';
 
   return (
@@ -484,11 +484,10 @@ export default function DashboardPage() {
                         <button
                           key={idx}
                           onClick={() => setPage(idx)}
-                          className={`h-1.5 rounded-full transition-all duration-150 cursor-pointer border-0 p-0 ${
-                            idx === page
-                              ? 'bg-[#888] w-4'
-                              : 'bg-[#333] w-1.5 hover:bg-[#555]'
-                          }`}
+                          className={`h-1.5 rounded-full transition-all duration-150 cursor-pointer border-0 p-0 ${idx === page
+                            ? 'bg-[#888] w-4'
+                            : 'bg-[#333] w-1.5 hover:bg-[#555]'
+                            }`}
                         />
                       ))}
                     </div>
