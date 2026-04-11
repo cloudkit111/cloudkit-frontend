@@ -1,4 +1,4 @@
-import cloudkitLogo from "../assets/cloudkit.png";
+import cloudkitLogo from '../assets/cloudkit.png';
 
 const CLIENT_ID = import.meta.env.VITE_GITHUB_CLIENT_ID;
 
@@ -122,13 +122,13 @@ export default function SignupPage() {
 
       <div
         style={{
-          minHeight: "100vh",
-          background: "#0a0a0a",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center",
-          padding: "24px 16px",
+          minHeight: '100vh',
+          background: '#0a0a0a',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '24px 16px',
           fontFamily: "'DM Sans', system-ui, sans-serif",
         }}
       >
@@ -137,19 +137,19 @@ export default function SignupPage() {
           <img
             src={cloudkitLogo}
             alt="CloudKit"
-            style={{ width: 90, height: 90, objectFit: "contain" }}
+            style={{ width: 90, height: 90, objectFit: 'contain' }}
           />
         </div>
 
         {/* Title */}
         <h1
           style={{
-            fontSize: "clamp(1.8rem, 5vw, 2.4rem)",
+            fontSize: 'clamp(1.8rem, 5vw, 2.4rem)',
             fontWeight: 700,
-            letterSpacing: "-0.04em",
-            color: "#fff",
-            margin: "0 0 36px",
-            textAlign: "center",
+            letterSpacing: '-0.04em',
+            color: '#fff',
+            margin: '0 0 36px',
+            textAlign: 'center',
             lineHeight: 1.1,
           }}
         >
@@ -159,10 +159,10 @@ export default function SignupPage() {
         {/* Card */}
         <div
           style={{
-            width: "100%",
+            width: '100%',
             maxWidth: 440,
-            display: "flex",
-            flexDirection: "column",
+            display: 'flex',
+            flexDirection: 'column',
             gap: 10,
           }}
         >
@@ -181,28 +181,28 @@ export default function SignupPage() {
             style={{
               marginTop: 20,
               fontSize: 12,
-              color: "rgba(255,255,255,0.28)",
-              textAlign: "center",
+              color: 'rgba(255,255,255,0.28)',
+              textAlign: 'center',
               lineHeight: 1.6,
-              letterSpacing: "0.01em",
+              letterSpacing: '0.01em',
             }}
           >
-            By continuing, you agree to CloudKit's{" "}
+            By continuing, you agree to CloudKit's{' '}
             <a
               href="#"
               style={{
-                color: "rgba(255,255,255,0.5)",
-                textDecoration: "underline",
+                color: 'rgba(255,255,255,0.5)',
+                textDecoration: 'underline',
               }}
             >
               Terms of Service
-            </a>{" "}
-            and{" "}
+            </a>{' '}
+            and{' '}
             <a
               href="#"
               style={{
-                color: "rgba(255,255,255,0.5)",
-                textDecoration: "underline",
+                color: 'rgba(255,255,255,0.5)',
+                textDecoration: 'underline',
               }}
             >
               Privacy Policy

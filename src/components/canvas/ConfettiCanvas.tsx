@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef } from 'react';
 
 export default function ConfettiCanvas({ active }: { active: boolean }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -7,13 +7,13 @@ export default function ConfettiCanvas({ active }: { active: boolean }) {
 
   useEffect(() => {
     if (!active) return;
-    
+
     cancelAnimationFrame(rafRef.current);
 
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const ctx = canvas.getContext("2d");
+    const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
     const dpr = window.devicePixelRatio || 1;
@@ -22,8 +22,8 @@ export default function ConfettiCanvas({ active }: { active: boolean }) {
 
     canvas.width = W * dpr;
     canvas.height = H * dpr;
-    canvas.style.width = W + "px";
-    canvas.style.height = H + "px";
+    canvas.style.width = W + 'px';
+    canvas.style.height = H + 'px';
 
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
@@ -39,16 +39,16 @@ export default function ConfettiCanvas({ active }: { active: boolean }) {
       w: number;
       h: number;
       color: string;
-      shape: "rect" | "circle";
+      shape: 'rect' | 'circle';
     };
 
     const colors = [
-      "#6366f1",
-      "#8b5cf6",
-      "#06b6d4",
-      "#34d399",
-      "#fbbf24",
-      "#f87171",
+      '#6366f1',
+      '#8b5cf6',
+      '#06b6d4',
+      '#34d399',
+      '#fbbf24',
+      '#f87171',
     ];
 
     const pieces: Piece[] = Array.from({ length: 160 }, () => ({
@@ -61,7 +61,7 @@ export default function ConfettiCanvas({ active }: { active: boolean }) {
       w: 6 + Math.random() * 8,
       h: 4 + Math.random() * 6,
       color: colors[Math.floor(Math.random() * colors.length)],
-      shape: Math.random() > 0.5 ? "rect" : "circle",
+      shape: Math.random() > 0.5 ? 'rect' : 'circle',
     }));
 
     const draw = (ts: number) => {
@@ -89,7 +89,7 @@ export default function ConfettiCanvas({ active }: { active: boolean }) {
         ctx.rotate(p.rot);
         ctx.fillStyle = p.color;
 
-        if (p.shape === "rect") {
+        if (p.shape === 'rect') {
           ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
         } else {
           ctx.beginPath();

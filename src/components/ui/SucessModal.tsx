@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState } from 'react';
 
 type Props = {
   repoName: string;
@@ -13,11 +13,11 @@ export default function SuccessModal({ repoName, deployUrl, onClose }: Props) {
     try {
       await navigator.clipboard.writeText(deployUrl);
     } catch {
-      const textarea = document.createElement("textarea");
+      const textarea = document.createElement('textarea');
       textarea.value = deployUrl;
       document.body.appendChild(textarea);
       textarea.select();
-      document.execCommand("copy");
+      document.execCommand('copy');
       document.body.removeChild(textarea);
     }
 
@@ -46,7 +46,7 @@ export default function SuccessModal({ repoName, deployUrl, onClose }: Props) {
             onClick={handleCopy}
             className="text-sm px-3 py-1 rounded bg-[#1a1a1a] border border-[#2a2a2a] text-gray-300 hover:bg-[#222]"
           >
-            {copied ? "✓ Copied" : "Copy"}
+            {copied ? '✓ Copied' : 'Copy'}
           </button>
         </div>
 

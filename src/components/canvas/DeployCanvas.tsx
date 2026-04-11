@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef } from 'react';
 
 export default function DeployCanvas() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -9,7 +9,7 @@ export default function DeployCanvas() {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const ctx = canvas.getContext("2d");
+    const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
     const dpr = window.devicePixelRatio || 1;
@@ -62,8 +62,8 @@ export default function DeployCanvas() {
         H / 2,
         Math.max(W, H) * 0.8,
       );
-      bg.addColorStop(0, "#0d0f1a");
-      bg.addColorStop(1, "#07080f");
+      bg.addColorStop(0, '#0d0f1a');
+      bg.addColorStop(1, '#07080f');
 
       ctx.fillStyle = bg;
       ctx.fillRect(0, 0, W, H);
@@ -84,9 +84,9 @@ export default function DeployCanvas() {
       const scanY = ((t * 22) % (H + 40)) - 20;
 
       const sg = ctx.createLinearGradient(0, scanY - 20, 0, scanY + 20);
-      sg.addColorStop(0, "transparent");
-      sg.addColorStop(0.5, "rgba(120,100,255,0.03)");
-      sg.addColorStop(1, "transparent");
+      sg.addColorStop(0, 'transparent');
+      sg.addColorStop(0.5, 'rgba(120,100,255,0.03)');
+      sg.addColorStop(1, 'transparent');
 
       ctx.fillStyle = sg;
       ctx.fillRect(0, scanY - 20, W, 40);
@@ -100,18 +100,18 @@ export default function DeployCanvas() {
     resize();
 
     let ro: ResizeObserver | null = null;
-    if (typeof ResizeObserver !== "undefined") {
+    if (typeof ResizeObserver !== 'undefined') {
       ro = new ResizeObserver(resize);
       ro.observe(canvas);
     }
 
-    window.addEventListener("resize", resize);
+    window.addEventListener('resize', resize);
 
     rafRef.current = requestAnimationFrame(draw);
 
     return () => {
       cancelAnimationFrame(rafRef.current);
-      window.removeEventListener("resize", resize);
+      window.removeEventListener('resize', resize);
       if (ro) ro.disconnect();
     };
   }, []);

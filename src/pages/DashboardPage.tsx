@@ -1,13 +1,14 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { useEffect, useState, useRef } from "react";
-import { Link } from "react-router-dom";
-import { useNavigate } from "react-router-dom";
-import logo from "../assets/cloudkit.png";
-import api from "../config/api-client";
-import { toast } from "sonner";
-import Navbar from "@/components/navbar/Navbar";
-import Search from "@/assets/svg/Search";
-import Private from "@/assets/svg/Private";
+import { useEffect, useState, useRef } from 'react';
+import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import logo from '../assets/cloudkit.png';
+import api from '../config/api-client';
+import { toast } from 'sonner';
+import Navbar from '@/components/navbar/Navbar';
+import Search from '@/assets/svg/Search';
+import Private from '@/assets/svg/Private';
+import { fetchUserDetails } from '@/services/userService';
 
 // ── Cloud / floating orbs canvas animation ────────────────────────────────
 
@@ -51,7 +52,7 @@ function CloudCanvas() {
       H = canvas.offsetHeight;
       canvas.width = W * dpr;
       canvas.height = H * dpr;
-      const ctx = canvas.getContext("2d")!;
+      const ctx = canvas.getContext('2d')!;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       init();
     };
@@ -83,13 +84,13 @@ function CloudCanvas() {
       if (!startRef.current) startRef.current = ts;
       const t = (ts - startRef.current) / 1000;
 
-      const ctx = canvas.getContext("2d")!;
+      const ctx = canvas.getContext('2d')!;
       ctx.clearRect(0, 0, W, H);
 
       const bgG = ctx.createLinearGradient(0, 0, W, H);
-      bgG.addColorStop(0, "#07080f");
-      bgG.addColorStop(0.5, "#090b16");
-      bgG.addColorStop(1, "#06080c");
+      bgG.addColorStop(0, '#07080f');
+      bgG.addColorStop(0.5, '#090b16');
+      bgG.addColorStop(1, '#06080c');
       ctx.fillStyle = bgG;
       ctx.fillRect(0, 0, W, H);
 
@@ -148,7 +149,7 @@ function CloudCanvas() {
         const a = p.alpha * (0.7 + 0.3 * Math.sin(t * 1.2 + p.pulse));
         const grd = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.r * 3.5);
         grd.addColorStop(0, `hsla(${p.hue}, 80%, 85%, ${a})`);
-        grd.addColorStop(1, "transparent");
+        grd.addColorStop(1, 'transparent');
         ctx.fillStyle = grd;
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.r * 3.5, 0, Math.PI * 2);
@@ -162,9 +163,9 @@ function CloudCanvas() {
 
       const scanY = ((t * 28) % (H + 40)) - 20;
       const scanG = ctx.createLinearGradient(0, scanY - 20, 0, scanY + 20);
-      scanG.addColorStop(0, "transparent");
-      scanG.addColorStop(0.5, "rgba(160,140,255,0.035)");
-      scanG.addColorStop(1, "transparent");
+      scanG.addColorStop(0, 'transparent');
+      scanG.addColorStop(0.5, 'rgba(160,140,255,0.035)');
+      scanG.addColorStop(1, 'transparent');
       ctx.fillStyle = scanG;
       ctx.fillRect(0, scanY - 20, W, 40);
 
@@ -172,12 +173,12 @@ function CloudCanvas() {
     };
 
     resize();
-    window.addEventListener("resize", resize);
+    window.addEventListener('resize', resize);
     rafRef.current = requestAnimationFrame(draw);
 
     return () => {
       cancelAnimationFrame(rafRef.current);
-      window.removeEventListener("resize", resize);
+      window.removeEventListener('resize', resize);
     };
   }, []);
 
@@ -185,7 +186,7 @@ function CloudCanvas() {
     <canvas
       ref={canvasRef}
       className="w-full h-full block"
-      style={{ display: "block" }}
+      style={{ display: 'block' }}
     />
   );
 }
@@ -198,7 +199,7 @@ export default function DashboardPage() {
   const [repos, setRepos] = useState<any[]>([]);
   const [user, setUser] = useState<any>(null);
   const [page, setPage] = useState(0);
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState('');
 
   const isSavingInstall = useRef(false);
 
@@ -206,15 +207,9 @@ export default function DashboardPage() {
 
   const fetchUser = async () => {
     try {
-      const res = await api.get(`${import.meta.env.VITE_BACKEND_URI}/auth/me`, {
-        withCredentials: true,
-      });
-      console.log(res);
-      setUser(res.data);
-      if (res.status === 200)
-        toast(`Loaded ${res?.data?.repos?.length} public repositories`);
-      setRepos(res.data.repos || []);
-      return res.data;
+      const res = await fetchUserDetails();
+      setUser(res?.data);
+      setRepos(res?.data.repos || []);
     } catch (err) {
       console.log(err);
     }
@@ -225,7 +220,7 @@ export default function DashboardPage() {
       await api.get(`${import.meta.env.VITE_BACKEND_URI}/auth/logout`, {
         withCredentials: true,
       });
-      window.location.href = "/";
+      window.location.href = '/';
     } catch (err) {
       console.log(err);
     }
@@ -233,22 +228,22 @@ export default function DashboardPage() {
 
   const handleImport = (repo: any) => {
     try {
-      if (sessionStorage.getItem("deployment_url")) {
-        sessionStorage.removeItem("deployment_url");
+      if (sessionStorage.getItem('deployment_url')) {
+        sessionStorage.removeItem('deployment_url');
       }
-      sessionStorage.setItem("deployment_url", repo?.clone_url);
-      navigate("/deploy-project");
+      sessionStorage.setItem('deployment_url', repo?.clone_url);
+      navigate('/deploy-project');
     } catch (error) {
       console.log(`Error during handling import ${error}`);
     }
   };
 
   const formatDate = (dateStr: string) => {
-    if (!dateStr) return "";
-    return new Date(dateStr).toLocaleDateString("en-US", {
-      month: "numeric",
-      day: "numeric",
-      year: "2-digit",
+    if (!dateStr) return '';
+    return new Date(dateStr).toLocaleDateString('en-US', {
+      month: 'numeric',
+      day: 'numeric',
+      year: '2-digit',
     });
   };
 
@@ -262,28 +257,28 @@ export default function DashboardPage() {
 
       // Step 2: check for installation_id in URL
       const params = new URLSearchParams(window.location.search);
-      const installationId = params.get("installation_id");
+      const installationId = params.get('installation_id');
 
       if (installationId) {
         isSavingInstall.current = true; // 🔒 block redirect while saving
-        const toastId = toast.loading("Saving installation...");
+        const toastId = toast.loading('Saving installation...');
 
         try {
           await api.post(
             `${import.meta.env.VITE_BACKEND_URI}/api/save-installation`,
             { installationId },
-            { withCredentials: true }
+            { withCredentials: true },
           );
 
           toast.dismiss(toastId);
-          toast.success("GitHub App installed successfully!");
+          toast.success('GitHub App installed successfully!');
 
           await fetchUser();
-          window.history.replaceState({}, "", window.location.pathname);
+          window.history.replaceState({}, '', window.location.pathname);
         } catch (err) {
-          console.error("Failed to save installation:", err);
+          console.error('Failed to save installation:', err);
           toast.dismiss(toastId);
-          toast.error("Failed to save installation. Please try again.");
+          toast.error('Failed to save installation. Please try again.');
         } finally {
           isSavingInstall.current = false;
         }
@@ -300,12 +295,12 @@ export default function DashboardPage() {
 
       // Don't redirect if installation_id is still in the URL
       const params = new URLSearchParams(window.location.search);
-      if (params.get("installation_id")) return;
+      if (params.get('installation_id')) return;
 
-      toast.info("Please install the CloudKit GitHub App to continue");
+      toast.info('Please install the CloudKit GitHub App to continue');
       setTimeout(() => {
         window.location.href =
-          "https://github.com/apps/cloudkit11/installations/new";
+          'https://github.com/apps/cloudkit11/installations/new';
       }, 2000);
     }
   }, [user]);
@@ -322,12 +317,12 @@ export default function DashboardPage() {
 
   const initials = user
     ? user.fullname
-      ?.split(" ")
-      .map((n: string) => n[0])
-      .join("")
-      .toUpperCase()
-      .slice(0, 2)
-    : "??";
+        ?.split(' ')
+        .map((n: string) => n[0])
+        .join('')
+        .toUpperCase()
+        .slice(0, 2)
+    : '??';
 
   return (
     <>
@@ -372,8 +367,8 @@ export default function DashboardPage() {
                   {filteredRepos.length > 0 && (
                     <span className="text-base text-white">
                       {page * PAGE_SIZE + 1}–
-                      {Math.min((page + 1) * PAGE_SIZE, filteredRepos.length)} of{" "}
-                      {filteredRepos.length}
+                      {Math.min((page + 1) * PAGE_SIZE, filteredRepos.length)}{' '}
+                      of {filteredRepos.length}
                     </span>
                   )}
                 </div>
@@ -382,7 +377,7 @@ export default function DashboardPage() {
                 <div className="flex gap-2 mb-3">
                   <div
                     className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl border border-[#222] bg-[#111] min-w-0 flex-shrink-0"
-                    style={{ minWidth: 0, width: "48%" }}
+                    style={{ minWidth: 0, width: '48%' }}
                   >
                     <svg
                       width="16"
@@ -394,7 +389,7 @@ export default function DashboardPage() {
                       <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z" />
                     </svg>
                     <span className="text-base text-white truncate flex-1">
-                      {user?.username ?? user?.fullname ?? "Loading…"}
+                      {user?.username ?? user?.fullname ?? 'Loading…'}
                     </span>
                   </div>
 
@@ -402,7 +397,7 @@ export default function DashboardPage() {
                     <Search />
                     <input
                       className="flex-1 bg-transparent border-none outline-none text-[13px] text-white placeholder-[#444]"
-                      style={{ fontFamily: "inherit" }}
+                      style={{ fontFamily: 'inherit' }}
                       placeholder="Search.."
                       value={search}
                       onChange={(e) => {
@@ -425,11 +420,11 @@ export default function DashboardPage() {
                         <div className="flex-1 flex flex-col gap-1.5">
                           <div
                             className="animate-shimmer h-3 rounded"
-                            style={{ width: "55%" }}
+                            style={{ width: '55%' }}
                           />
                           <div
                             className="animate-shimmer h-2.5 rounded"
-                            style={{ width: "30%" }}
+                            style={{ width: '30%' }}
                           />
                         </div>
                       </div>
@@ -451,7 +446,7 @@ export default function DashboardPage() {
                             <span className="text-base font-medium text-white truncate">
                               {repo.name}
                             </span>
-                            {repo.private && (<Private />)}
+                            {repo.private && <Private />}
                             {repo.created_at && (
                               <span className="text-[13px] text-white">
                                 · {formatDate(repo.created_at)}
@@ -489,10 +484,11 @@ export default function DashboardPage() {
                         <button
                           key={idx}
                           onClick={() => setPage(idx)}
-                          className={`h-1.5 rounded-full transition-all duration-150 cursor-pointer border-0 p-0 ${idx === page
-                            ? "bg-[#888] w-4"
-                            : "bg-[#333] w-1.5 hover:bg-[#555]"
-                            }`}
+                          className={`h-1.5 rounded-full transition-all duration-150 cursor-pointer border-0 p-0 ${
+                            idx === page
+                              ? 'bg-[#888] w-4'
+                              : 'bg-[#333] w-1.5 hover:bg-[#555]'
+                          }`}
                         />
                       ))}
                     </div>

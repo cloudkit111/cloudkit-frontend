@@ -1,5 +1,5 @@
-import axios, { type AxiosInstance } from "axios";
-import { toast } from "sonner";
+import axios, { type AxiosInstance } from 'axios';
+import { toast } from 'sonner';
 axios.defaults.withCredentials = true;
 
 const api: AxiosInstance = axios.create({
@@ -13,7 +13,7 @@ const handleLogout = async () => {
     await axios.get(`${import.meta.env.VITE_BACKEND_URI}/auth/logout`, {
       withCredentials: true,
     });
-    window.location.href = "/";
+    window.location.href = '/';
   } catch (err) {
     console.log(err);
   }
@@ -24,7 +24,7 @@ api.interceptors.response.use(
   (error) => {
     // Auto logout when token expires after 1.5 seconds
     if (error.response?.status === 401) {
-      toast("Session Expired!");
+      toast('Session Expired!');
       setTimeout(() => handleLogout(), 1500);
     }
     return Promise.reject(error);

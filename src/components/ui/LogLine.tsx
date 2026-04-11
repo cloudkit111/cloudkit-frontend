@@ -8,7 +8,7 @@ export function LogLine({ line, isInit }: { line: string; isInit?: boolean }) {
     return (
       <div className="flex gap-2 leading-relaxed">
         <span
-          style={{ color: "#3a3a3a", userSelect: "none" }}
+          style={{ color: '#3a3a3a', userSelect: 'none' }}
           className="flex-shrink-0 text-[11px] pt-px"
         >
           ›
@@ -20,27 +20,27 @@ export function LogLine({ line, isInit }: { line: string; isInit?: boolean }) {
     );
   }
 
-  let prefixColor = "#555";
-  let textColor = "#9ca3af";
+  let prefixColor = '#555';
+  let textColor = '#9ca3af';
 
   if (/error|err|fail/i.test(trimmed)) {
-    prefixColor = "#f87171";
-    textColor = "#fca5a5";
+    prefixColor = '#f87171';
+    textColor = '#fca5a5';
   } else if (/warn/i.test(trimmed)) {
-    prefixColor = "#fbbf24";
-    textColor = "#fde68a";
+    prefixColor = '#fbbf24';
+    textColor = '#fde68a';
   } else if (/success|done|complete|✓|built/i.test(trimmed)) {
-    prefixColor = "#34d399";
-    textColor = "#6ee7b7";
+    prefixColor = '#34d399';
+    textColor = '#6ee7b7';
   } else if (/info|→|▶/i.test(trimmed)) {
-    prefixColor = "#60a5fa";
-    textColor = "#93c5fd";
+    prefixColor = '#60a5fa';
+    textColor = '#93c5fd';
   }
 
   return (
     <div className="flex gap-2 leading-relaxed">
       <span
-        style={{ color: prefixColor, userSelect: "none" }}
+        style={{ color: prefixColor, userSelect: 'none' }}
         className="flex-shrink-0 text-[11px] pt-px"
       >
         ›

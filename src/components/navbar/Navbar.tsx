@@ -1,6 +1,6 @@
-import { Link } from "react-router-dom";
-import { useState } from "react";
-import logo from "../../assets/cloudkit.png";
+import { Link } from 'react-router-dom';
+import { useState } from 'react';
+import logo from '../../assets/cloudkit.png';
 
 type NavUser = {
   fullname?: string;
@@ -10,7 +10,7 @@ type NavUser = {
 };
 
 type NavbarProps = {
-  variant: "guest" | "auth";
+  variant: 'guest' | 'auth';
   user?: NavUser | null;
   onLogout?: () => void;
   scrolled?: boolean;
@@ -26,11 +26,11 @@ export default function Navbar({
 
   const initials =
     user?.fullname
-      ?.split(" ")
+      ?.split(' ')
       .map((n) => n[0])
-      .join("")
+      .join('')
       .toUpperCase()
-      .slice(0, 2) ?? "??";
+      .slice(0, 2) ?? '??';
 
   return (
     <>
@@ -66,20 +66,20 @@ export default function Navbar({
 
       <nav
         style={{
-          position: "fixed",
+          position: 'fixed',
           top: 0,
           left: 0,
           right: 0,
           zIndex: 100,
           height: 60,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          padding: "0 clamp(16px, 4vw, 32px)",
-          background: scrolled ? "rgba(10,10,10,0.85)" : "transparent",
-          backdropFilter: scrolled ? "blur(12px)" : "none",
-          borderBottom: scrolled ? "1px solid rgba(255,255,255,0.06)" : "none",
-          transition: "all 0.3s ease",
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: '0 clamp(16px, 4vw, 32px)',
+          background: scrolled ? 'rgba(10,10,10,0.85)' : 'transparent',
+          backdropFilter: scrolled ? 'blur(12px)' : 'none',
+          borderBottom: scrolled ? '1px solid rgba(255,255,255,0.06)' : 'none',
+          transition: 'all 0.3s ease',
         }}
         onClick={() => showUserMenu && setShowUserMenu(false)}
       >
@@ -87,10 +87,10 @@ export default function Navbar({
         <Link
           to="/"
           style={{
-            display: "flex",
-            alignItems: "center",
+            display: 'flex',
+            alignItems: 'center',
             gap: 8,
-            textDecoration: "none",
+            textDecoration: 'none',
           }}
         >
           <img
@@ -98,14 +98,14 @@ export default function Navbar({
             width={28}
             height={28}
             alt="CloudKit"
-            style={{ objectFit: "contain" }}
+            style={{ objectFit: 'contain' }}
           />
           <span
             style={{
               fontWeight: 700,
               fontSize: 17,
-              letterSpacing: "-0.03em",
-              color: "#fff",
+              letterSpacing: '-0.03em',
+              color: '#fff',
             }}
           >
             CloudKit
@@ -113,16 +113,16 @@ export default function Navbar({
         </Link>
 
         {/* Right: guest vs auth */}
-        {variant === "guest" ? (
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+        {variant === 'guest' ? (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <Link
               to="/login"
               style={{
-                color: "rgba(255,255,255,0.6)",
+                color: 'rgba(255,255,255,0.6)',
                 fontSize: 14,
                 fontWeight: 500,
-                textDecoration: "none",
-                padding: "6px 14px",
+                textDecoration: 'none',
+                padding: '6px 14px',
               }}
             >
               Log In
@@ -135,28 +135,28 @@ export default function Navbar({
           <div className="relative" onClick={(e) => e.stopPropagation()}>
             <button
               style={{
-                display: "flex",
-                alignItems: "center",
+                display: 'flex',
+                alignItems: 'center',
                 gap: 10,
-                padding: "6px 10px",
+                padding: '6px 10px',
                 borderRadius: 8,
-                border: "1px solid transparent",
-                background: "transparent",
-                color: "#ededed",
-                cursor: "pointer",
-                transition: "all 0.15s ease",
+                border: '1px solid transparent',
+                background: 'transparent',
+                color: '#ededed',
+                cursor: 'pointer',
+                transition: 'all 0.15s ease',
               }}
               onMouseEnter={(e) => {
                 (e.currentTarget as HTMLButtonElement).style.background =
-                  "#1a1a1a";
+                  '#1a1a1a';
                 (e.currentTarget as HTMLButtonElement).style.borderColor =
-                  "#2a2a2a";
+                  '#2a2a2a';
               }}
               onMouseLeave={(e) => {
                 (e.currentTarget as HTMLButtonElement).style.background =
-                  "transparent";
+                  'transparent';
                 (e.currentTarget as HTMLButtonElement).style.borderColor =
-                  "transparent";
+                  'transparent';
               }}
               onClick={() => setShowUserMenu((v) => !v)}
             >
@@ -165,16 +165,16 @@ export default function Navbar({
                 style={{
                   width: 30,
                   height: 30,
-                  borderRadius: "50%",
-                  background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
+                  borderRadius: '50%',
+                  background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
                   fontSize: 11,
                   fontWeight: 600,
-                  color: "#fff",
+                  color: '#fff',
                   flexShrink: 0,
-                  overflow: "hidden",
+                  overflow: 'hidden',
                 }}
               >
                 {user?.avatar_url ? (
@@ -182,10 +182,10 @@ export default function Navbar({
                     src={user.avatar_url}
                     alt={initials}
                     style={{
-                      width: "100%",
-                      height: "100%",
-                      objectFit: "cover",
-                      borderRadius: "50%",
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'cover',
+                      borderRadius: '50%',
                     }}
                   />
                 ) : (
@@ -196,19 +196,19 @@ export default function Navbar({
               {/* Name + email */}
               <div
                 style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "flex-start",
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'flex-start',
                   lineHeight: 1.3,
                 }}
               >
                 <span
-                  style={{ fontSize: 13, fontWeight: 500, color: "#ededed" }}
+                  style={{ fontSize: 13, fontWeight: 500, color: '#ededed' }}
                 >
-                  {user?.fullname ?? "…"}
+                  {user?.fullname ?? '…'}
                 </span>
-                <span style={{ fontSize: 11, color: "#666" }}>
-                  {user?.email ?? ""}
+                <span style={{ fontSize: 11, color: '#666' }}>
+                  {user?.email ?? ''}
                 </span>
               </div>
 
@@ -216,10 +216,10 @@ export default function Navbar({
               <span
                 style={{
                   fontSize: 10,
-                  color: "#555",
-                  display: "inline-block",
-                  transition: "transform 0.2s ease",
-                  transform: showUserMenu ? "rotate(180deg)" : "rotate(0deg)",
+                  color: '#555',
+                  display: 'inline-block',
+                  transition: 'transform 0.2s ease',
+                  transform: showUserMenu ? 'rotate(180deg)' : 'rotate(0deg)',
                 }}
               >
                 ▾
@@ -231,58 +231,58 @@ export default function Navbar({
               <div
                 className="animate-dropIn"
                 style={{
-                  position: "absolute",
-                  top: "calc(100% + 6px)",
+                  position: 'absolute',
+                  top: 'calc(100% + 6px)',
                   right: 0,
                   minWidth: 200,
-                  background: "#111",
-                  border: "1px solid #222",
+                  background: '#111',
+                  border: '1px solid #222',
                   borderRadius: 10,
-                  overflow: "hidden",
-                  boxShadow: "0 8px 32px rgba(0,0,0,0.5)",
+                  overflow: 'hidden',
+                  boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
                   zIndex: 200,
                 }}
               >
                 {/* User info header */}
                 <div
                   style={{
-                    padding: "12px 14px",
-                    borderBottom: "1px solid #1e1e1e",
+                    padding: '12px 14px',
+                    borderBottom: '1px solid #1e1e1e',
                   }}
                 >
                   <div
-                    style={{ fontSize: 13, fontWeight: 500, color: "#ededed" }}
+                    style={{ fontSize: 13, fontWeight: 500, color: '#ededed' }}
                   >
                     {user?.fullname}
                   </div>
-                  <div style={{ fontSize: 11, color: "#555", marginTop: 2 }}>
+                  <div style={{ fontSize: 11, color: '#555', marginTop: 2 }}>
                     {user?.email}
                   </div>
                 </div>
 
                 {/* Projects */}
-                <Link to="/projects" style={{ textDecoration: "none" }}>
+                <Link to="/projects" style={{ textDecoration: 'none' }}>
                   <div
                     style={{
-                      display: "flex",
-                      alignItems: "center",
+                      display: 'flex',
+                      alignItems: 'center',
                       gap: 10,
-                      padding: "10px 14px",
+                      padding: '10px 14px',
                       fontSize: 13,
-                      color: "#aaa",
-                      cursor: "pointer",
-                      transition: "all 0.1s ease",
+                      color: '#aaa',
+                      cursor: 'pointer',
+                      transition: 'all 0.1s ease',
                     }}
                     onMouseEnter={(e) => {
                       (e.currentTarget as HTMLDivElement).style.background =
-                        "#1a1a1a";
+                        '#1a1a1a';
                       (e.currentTarget as HTMLDivElement).style.color =
-                        "#ededed";
+                        '#ededed';
                     }}
                     onMouseLeave={(e) => {
                       (e.currentTarget as HTMLDivElement).style.background =
-                        "transparent";
-                      (e.currentTarget as HTMLDivElement).style.color = "#aaa";
+                        'transparent';
+                      (e.currentTarget as HTMLDivElement).style.color = '#aaa';
                     }}
                   >
                     <span style={{ fontSize: 14 }}>📁</span> Projects
@@ -292,23 +292,23 @@ export default function Navbar({
                 {/* Logout */}
                 <div
                   style={{
-                    display: "flex",
-                    alignItems: "center",
+                    display: 'flex',
+                    alignItems: 'center',
                     gap: 10,
-                    padding: "10px 14px",
+                    padding: '10px 14px',
                     fontSize: 13,
-                    color: "#f87171",
-                    cursor: "pointer",
-                    borderTop: "1px solid #1e1e1e",
-                    transition: "all 0.1s ease",
+                    color: '#f87171',
+                    cursor: 'pointer',
+                    borderTop: '1px solid #1e1e1e',
+                    transition: 'all 0.1s ease',
                   }}
                   onMouseEnter={(e) => {
                     (e.currentTarget as HTMLDivElement).style.background =
-                      "rgba(248,113,113,0.08)";
+                      'rgba(248,113,113,0.08)';
                   }}
                   onMouseLeave={(e) => {
                     (e.currentTarget as HTMLDivElement).style.background =
-                      "transparent";
+                      'transparent';
                   }}
                   onClick={onLogout}
                 >

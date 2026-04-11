@@ -1,10 +1,10 @@
-"use client";
-import { Link } from "react-router-dom";
-import logo from "../assets/cloudkit.png";
-import { useEffect, useState } from "react";
-import LightRays from "@/components/LightRays";
-import Navbar from "@/components/navbar/Navbar";
-import BorderGlow from "@/components/BorderGlow";
+'use client';
+import { Link } from 'react-router-dom';
+import logo from '../assets/cloudkit.png';
+import { useEffect, useState } from 'react';
+import LightRays from '@/components/LightRays';
+import Navbar from '@/components/navbar/Navbar';
+import BorderGlow from '@/components/BorderGlow';
 
 /* ─────────────────────────────────────────────
    CloudKit Logo
@@ -16,7 +16,7 @@ function CloudKitLogo({ size = 32 }: { size?: number }) {
       height={size}
       src={logo}
       alt="CloudKit logo"
-      style={{ objectFit: "contain" }}
+      style={{ objectFit: 'contain' }}
     />
   );
 }
@@ -28,16 +28,16 @@ function HeroCloud() {
   return (
     <div
       className="ck-float"
-      style={{ marginTop: "0rem", display: "flex", justifyContent: "center" }}
+      style={{ marginTop: '0rem', display: 'flex', justifyContent: 'center' }}
     >
       <svg
         viewBox="0 0 260 200"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
         style={{
-          width: "clamp(160px, 30vw, 260px)",
-          height: "auto",
-          filter: "drop-shadow(0 0 60px rgba(96,165,250,0.35))",
+          width: 'clamp(160px, 30vw, 260px)',
+          height: 'auto',
+          filter: 'drop-shadow(0 0 60px rgba(96,165,250,0.35))',
         }}
       >
         <defs>
@@ -70,7 +70,7 @@ function HeroCloud() {
             fill="none"
             stroke={`rgba(255,255,255,${0.5 - i * 0.055})`}
             strokeWidth="0.8"
-            filter={i === 0 ? "url(#glow)" : undefined}
+            filter={i === 0 ? 'url(#glow)' : undefined}
           />
         ))}
         <path
@@ -103,68 +103,68 @@ export default function LandingPage() {
 
   useEffect(() => {
     const handler = () => setScrolled(window.scrollY > 10);
-    window.addEventListener("scroll", handler);
-    return () => window.removeEventListener("scroll", handler);
+    window.addEventListener('scroll', handler);
+    return () => window.removeEventListener('scroll', handler);
   }, []);
 
   const techs = [
-    "Next.js",
-    "React",
-    "Svelte",
-    "Vue",
-    "Nuxt",
-    "TypeScript",
-    "Tailwind",
-    "Prisma",
-    "tRPC",
-    "Drizzle",
-    "Bun",
-    "Deno",
-    "Node.js",
-    "Rust",
-    "Go",
-    "Python",
+    'Next.js',
+    'React',
+    'Svelte',
+    'Vue',
+    'Nuxt',
+    'TypeScript',
+    'Tailwind',
+    'Prisma',
+    'tRPC',
+    'Drizzle',
+    'Bun',
+    'Deno',
+    'Node.js',
+    'Rust',
+    'Go',
+    'Python',
   ];
   const marqueeItems = [...techs, ...techs];
 
   const features = [
     {
-      iconBg: "rgba(251,191,36,0.15)",
-      title: "Instant Deploy",
-      desc: "Push to git and your app is live in seconds. Zero configuration needed for most frameworks.",
+      iconBg: 'rgba(251,191,36,0.15)',
+      title: 'Instant Deploy',
+      desc: 'Push to git and your app is live in seconds. Zero configuration needed for most frameworks.',
     },
     {
-      iconBg: "rgba(59,130,246,0.15)",
-      title: "Global Edge Network",
-      desc: "CDN spanning 100+ cities worldwide. Sub-50ms latency, everywhere on the planet.",
+      iconBg: 'rgba(59,130,246,0.15)',
+      title: 'Global Edge Network',
+      desc: 'CDN spanning 100+ cities worldwide. Sub-50ms latency, everywhere on the planet.',
     },
     {
-      iconBg: "rgba(34,197,94,0.15)",
-      title: "Security First",
-      desc: "Built-in DDoS protection, WAF, and Bot ID. Automatic HTTPS for every deployment.",
+      iconBg: 'rgba(34,197,94,0.15)',
+      title: 'Security First',
+      desc: 'Built-in DDoS protection, WAF, and Bot ID. Automatic HTTPS for every deployment.',
     },
     {
-      iconBg: "rgba(168,85,247,0.15)",
-      title: "Observability",
-      desc: "Real-time analytics, logs, and performance monitoring. Understand your app deeply.",
+      iconBg: 'rgba(168,85,247,0.15)',
+      title: 'Observability',
+      desc: 'Real-time analytics, logs, and performance monitoring. Understand your app deeply.',
     },
     {
-      iconBg: "rgba(239,68,68,0.15)",
-      title: "AI Gateway",
-      desc: "Unified gateway for all AI model providers with caching, rate limiting, and analytics.",
+      iconBg: 'rgba(239,68,68,0.15)',
+      title: 'AI Gateway',
+      desc: 'Unified gateway for all AI model providers with caching, rate limiting, and analytics.',
     },
     {
-      iconBg: "rgba(20,184,166,0.15)",
-      title: "CI/CD Built-in",
-      desc: "Every PR gets a preview URL. Merge to main, deploy to production. Simple.",
+      iconBg: 'rgba(20,184,166,0.15)',
+      title: 'CI/CD Built-in',
+      desc: 'Every PR gets a preview URL. Merge to main, deploy to production. Simple.',
     },
   ];
 
   const stats = [
-    { value: "99.99%", label: "Uptime SLA" },
-    { value: "100+", label: "Edge locations" },
-    { value: "< 50ms", label: "Global latency" },
-    { value: "10M+", label: "Deployments" },
+    { value: '99.99%', label: 'Uptime SLA' },
+    { value: '100+', label: 'Edge locations' },
+    { value: '< 50ms', label: 'Global latency' },
+    { value: '10M+', label: 'Deployments' },
   ];
 
   return (
@@ -271,34 +271,34 @@ export default function LandingPage() {
       {/* ROOT — inline background guaranteed */}
       <div
         style={{
-          minHeight: "100vh",
-          background: "#050505",
-          color: "#ffffff",
+          minHeight: '100vh',
+          background: '#050505',
+          color: '#ffffff',
           fontFamily: "'DM Sans', system-ui, sans-serif",
-          overflowX: "hidden",
+          overflowX: 'hidden',
         }}
       >
         <Navbar variant="guest" scrolled={scrolled} />
         {/* ── HERO ── */}
         <section
           style={{
-            position: "relative",
-            minHeight: "100vh",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "center",
-            textAlign: "center",
-            padding: "clamp(100px,14vw,140px) 24px 80px",
-            overflow: "hidden",
+            position: 'relative',
+            minHeight: '100vh',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            textAlign: 'center',
+            padding: 'clamp(100px,14vw,140px) 24px 80px',
+            overflow: 'hidden',
           }}
         >
           <div
             style={{
-              position: "absolute",
+              position: 'absolute',
               inset: 0,
               zIndex: 0,
-              pointerEvents: "none",
+              pointerEvents: 'none',
             }}
           >
             <LightRays
@@ -322,66 +322,66 @@ export default function LandingPage() {
           <div
             aria-hidden="true"
             style={{
-              position: "absolute",
+              position: 'absolute',
               inset: 0,
-              overflow: "hidden",
-              pointerEvents: "none",
+              overflow: 'hidden',
+              pointerEvents: 'none',
             }}
           >
             <div
               className="ck-pulse1"
               style={{
-                position: "absolute",
-                top: "8%",
-                left: "12%",
-                width: "clamp(200px,30vw,420px)",
-                height: "clamp(200px,30vw,420px)",
-                borderRadius: "50%",
+                position: 'absolute',
+                top: '8%',
+                left: '12%',
+                width: 'clamp(200px,30vw,420px)',
+                height: 'clamp(200px,30vw,420px)',
+                borderRadius: '50%',
                 background:
-                  "radial-gradient(circle,rgba(59,130,246,0.18) 0%,transparent 70%)",
-                filter: "blur(40px)",
+                  'radial-gradient(circle,rgba(59,130,246,0.18) 0%,transparent 70%)',
+                filter: 'blur(40px)',
               }}
             />
             <div
               className="ck-pulse2"
               style={{
-                position: "absolute",
-                top: "4%",
-                right: "8%",
-                width: "clamp(180px,28vw,380px)",
-                height: "clamp(180px,28vw,380px)",
-                borderRadius: "50%",
+                position: 'absolute',
+                top: '4%',
+                right: '8%',
+                width: 'clamp(180px,28vw,380px)',
+                height: 'clamp(180px,28vw,380px)',
+                borderRadius: '50%',
                 background:
-                  "radial-gradient(circle,rgba(239,68,68,0.15) 0%,transparent 70%)",
-                filter: "blur(40px)",
+                  'radial-gradient(circle,rgba(239,68,68,0.15) 0%,transparent 70%)',
+                filter: 'blur(40px)',
               }}
             />
             <div
               className="ck-pulse3"
               style={{
-                position: "absolute",
-                top: "20%",
-                left: "38%",
-                width: "clamp(160px,26vw,340px)",
-                height: "clamp(160px,26vw,340px)",
-                borderRadius: "50%",
+                position: 'absolute',
+                top: '20%',
+                left: '38%',
+                width: 'clamp(160px,26vw,340px)',
+                height: 'clamp(160px,26vw,340px)',
+                borderRadius: '50%',
                 background:
-                  "radial-gradient(circle,rgba(34,197,94,0.12) 0%,transparent 70%)",
-                filter: "blur(35px)",
+                  'radial-gradient(circle,rgba(34,197,94,0.12) 0%,transparent 70%)',
+                filter: 'blur(35px)',
               }}
             />
             <div
               className="ck-pulse1r"
               style={{
-                position: "absolute",
-                top: "22%",
-                right: "26%",
-                width: "clamp(140px,24vw,300px)",
-                height: "clamp(140px,24vw,300px)",
-                borderRadius: "50%",
+                position: 'absolute',
+                top: '22%',
+                right: '26%',
+                width: 'clamp(140px,24vw,300px)',
+                height: 'clamp(140px,24vw,300px)',
+                borderRadius: '50%',
                 background:
-                  "radial-gradient(circle,rgba(168,85,247,0.14) 0%,transparent 70%)",
-                filter: "blur(35px)",
+                  'radial-gradient(circle,rgba(168,85,247,0.14) 0%,transparent 70%)',
+                filter: 'blur(35px)',
               }}
             />
           </div>
@@ -390,49 +390,49 @@ export default function LandingPage() {
           <div
             aria-hidden="true"
             style={{
-              position: "absolute",
+              position: 'absolute',
               top: 72,
-              left: "8%",
+              left: '8%',
               width: 20,
               height: 20,
-              borderTop: "1px solid rgba(255,255,255,0.14)",
-              borderLeft: "1px solid rgba(255,255,255,0.14)",
+              borderTop: '1px solid rgba(255,255,255,0.14)',
+              borderLeft: '1px solid rgba(255,255,255,0.14)',
             }}
           />
           <div
             aria-hidden="true"
             style={{
-              position: "absolute",
+              position: 'absolute',
               top: 72,
-              right: "8%",
+              right: '8%',
               width: 20,
               height: 20,
-              borderTop: "1px solid rgba(255,255,255,0.14)",
-              borderRight: "1px solid rgba(255,255,255,0.14)",
+              borderTop: '1px solid rgba(255,255,255,0.14)',
+              borderRight: '1px solid rgba(255,255,255,0.14)',
             }}
           />
           <div
             aria-hidden="true"
             style={{
-              position: "absolute",
+              position: 'absolute',
               bottom: 36,
-              left: "8%",
+              left: '8%',
               width: 20,
               height: 20,
-              borderBottom: "1px solid rgba(255,255,255,0.14)",
-              borderLeft: "1px solid rgba(255,255,255,0.14)",
+              borderBottom: '1px solid rgba(255,255,255,0.14)',
+              borderLeft: '1px solid rgba(255,255,255,0.14)',
             }}
           />
           <div
             aria-hidden="true"
             style={{
-              position: "absolute",
+              position: 'absolute',
               bottom: 36,
-              right: "8%",
+              right: '8%',
               width: 20,
               height: 20,
-              borderBottom: "1px solid rgba(255,255,255,0.14)",
-              borderRight: "1px solid rgba(255,255,255,0.14)",
+              borderBottom: '1px solid rgba(255,255,255,0.14)',
+              borderRight: '1px solid rgba(255,255,255,0.14)',
             }}
           />
 
@@ -440,10 +440,10 @@ export default function LandingPage() {
           <div
             className="-mt-14"
             style={{
-              position: "relative",
+              position: 'relative',
               zIndex: 2,
               maxWidth: 680,
-              width: "100%",
+              width: '100%',
             }}
           >
             <div className="ck-fade-up" style={{ marginBottom: 28 }}>
@@ -452,9 +452,9 @@ export default function LandingPage() {
                   style={{
                     width: 6,
                     height: 6,
-                    borderRadius: "50%",
-                    background: "#22c55e",
-                    display: "inline-block",
+                    borderRadius: '50%',
+                    background: '#22c55e',
+                    display: 'inline-block',
                   }}
                 />
                 Now in public beta
@@ -464,15 +464,15 @@ export default function LandingPage() {
             <h1
               className="ck-fade-up-1"
               style={{
-                fontSize: "clamp(2.2rem,6vw,4rem)",
+                fontSize: 'clamp(2.2rem,6vw,4rem)',
                 fontWeight: 700,
                 lineHeight: 1.08,
-                letterSpacing: "-0.03em",
-                color: "#fff",
+                letterSpacing: '-0.03em',
+                color: '#fff',
                 margin: 0,
               }}
             >
-              Build and deploy on the{" "}
+              Build and deploy on the{' '}
               <span className="ck-shimmer">CloudKit</span>
             </h1>
 
@@ -481,11 +481,11 @@ export default function LandingPage() {
               style={{
                 marginTop: 20,
                 marginBottom: 36,
-                fontSize: "clamp(0.95rem,2vw,1.1rem)",
-                color: "rgba(255,255,255,0.48)",
+                fontSize: 'clamp(0.95rem,2vw,1.1rem)',
+                color: 'rgba(255,255,255,0.48)',
                 lineHeight: 1.72,
                 maxWidth: 460,
-                margin: "20px auto 36px",
+                margin: '20px auto 36px',
               }}
             >
               CloudKit provides the developer tools and cloud infrastructure to
@@ -494,7 +494,7 @@ export default function LandingPage() {
 
             <div
               className="ck-fade-up-3"
-              style={{ display: "flex", justifyContent: "center" }}
+              style={{ display: 'flex', justifyContent: 'center' }}
             >
               <Link className="ck-btn-primary" to="/login">
                 <svg
@@ -521,13 +521,13 @@ export default function LandingPage() {
 
           <div
             style={{
-              position: "absolute",
+              position: 'absolute',
               bottom: 0,
-              left: "12%",
-              right: "12%",
+              left: '12%',
+              right: '12%',
               height: 1,
               background:
-                "linear-gradient(90deg,transparent,rgba(255,255,255,0.08),transparent)",
+                'linear-gradient(90deg,transparent,rgba(255,255,255,0.08),transparent)',
             }}
           />
         </section>
@@ -535,19 +535,19 @@ export default function LandingPage() {
         {/* ── MARQUEE ── */}
         <section
           style={{
-            padding: "56px 0",
-            borderBottom: "1px solid rgba(255,255,255,0.06)",
-            overflow: "hidden",
+            padding: '56px 0',
+            borderBottom: '1px solid rgba(255,255,255,0.06)',
+            overflow: 'hidden',
           }}
         >
           <p
             style={{
-              textAlign: "center",
+              textAlign: 'center',
               fontSize: 11,
               fontWeight: 600,
-              letterSpacing: "0.12em",
-              textTransform: "uppercase",
-              color: "rgba(255,255,255,0.3)",
+              letterSpacing: '0.12em',
+              textTransform: 'uppercase',
+              color: 'rgba(255,255,255,0.3)',
               marginBottom: 28,
             }}
           >
@@ -559,13 +559,13 @@ export default function LandingPage() {
                 <span
                   key={i}
                   style={{
-                    padding: "8px 18px",
-                    background: "rgba(255,255,255,0.04)",
-                    border: "1px solid rgba(255,255,255,0.08)",
+                    padding: '8px 18px',
+                    background: 'rgba(255,255,255,0.04)',
+                    border: '1px solid rgba(255,255,255,0.08)',
                     borderRadius: 999,
                     fontSize: 13,
-                    color: "rgba(255,255,255,0.6)",
-                    whiteSpace: "nowrap",
+                    color: 'rgba(255,255,255,0.6)',
+                    whiteSpace: 'nowrap',
                     fontWeight: 500,
                   }}
                 >
@@ -579,19 +579,19 @@ export default function LandingPage() {
         {/* ── FEATURES ── */}
         <section
           style={{
-            padding: "clamp(60px,10vw,100px) clamp(16px,4vw,24px)",
+            padding: 'clamp(60px,10vw,100px) clamp(16px,4vw,24px)',
             maxWidth: 1100,
-            margin: "0 auto",
+            margin: '0 auto',
           }}
         >
-          <div style={{ textAlign: "center", marginBottom: 60 }}>
+          <div style={{ textAlign: 'center', marginBottom: 60 }}>
             <p
               style={{
                 fontSize: 11,
                 fontWeight: 600,
-                letterSpacing: "0.12em",
-                textTransform: "uppercase",
-                color: "rgba(255,255,255,0.32)",
+                letterSpacing: '0.12em',
+                textTransform: 'uppercase',
+                color: 'rgba(255,255,255,0.32)',
                 marginBottom: 12,
               }}
             >
@@ -599,11 +599,11 @@ export default function LandingPage() {
             </p>
             <h2
               style={{
-                fontSize: "clamp(1.7rem,4vw,2.8rem)",
+                fontSize: 'clamp(1.7rem,4vw,2.8rem)',
                 fontWeight: 700,
-                letterSpacing: "-0.03em",
+                letterSpacing: '-0.03em',
                 lineHeight: 1.12,
-                color: "#fff",
+                color: '#fff',
               }}
             >
               Scale your <span className="ck-badge">Enterprise</span> without
@@ -623,14 +623,14 @@ export default function LandingPage() {
                 glowIntensity={0.8}
                 coneSpread={25}
                 animated={false}
-                colors={["#60a5fa", "#a78bfa", "#f472b6"]}
+                colors={['#60a5fa', '#a78bfa', '#f472b6']}
               >
                 <div
                   className="ck-fade-up overflow-hidden"
                   style={{
                     padding: 28,
                     animationDelay: `${i * 0.08}s`,
-                    overflow: "hidden",
+                    overflow: 'hidden',
                   }}
                 >
                   <h3
@@ -638,8 +638,8 @@ export default function LandingPage() {
                       fontSize: 15,
                       fontWeight: 600,
                       marginBottom: 8,
-                      letterSpacing: "-0.02em",
-                      color: "#fff",
+                      letterSpacing: '-0.02em',
+                      color: '#fff',
                     }}
                   >
                     {f.title}
@@ -647,7 +647,7 @@ export default function LandingPage() {
                   <p
                     style={{
                       fontSize: 14,
-                      color: "rgba(255,255,255,0.45)",
+                      color: 'rgba(255,255,255,0.45)',
                       lineHeight: 1.65,
                       margin: 0,
                     }}
@@ -663,9 +663,9 @@ export default function LandingPage() {
         {/* ── STATS ── */}
         <section
           style={{
-            borderTop: "1px solid rgba(255,255,255,0.06)",
-            borderBottom: "1px solid rgba(255,255,255,0.06)",
-            padding: "clamp(40px,8vw,64px) 24px",
+            borderTop: '1px solid rgba(255,255,255,0.06)',
+            borderBottom: '1px solid rgba(255,255,255,0.06)',
+            padding: 'clamp(40px,8vw,64px) 24px',
           }}
         >
           <div className="ck-stats">
@@ -673,11 +673,11 @@ export default function LandingPage() {
               <div key={i}>
                 <div
                   style={{
-                    fontSize: "clamp(1.6rem,3vw,2.2rem)",
+                    fontSize: 'clamp(1.6rem,3vw,2.2rem)',
                     fontWeight: 700,
-                    letterSpacing: "-0.04em",
+                    letterSpacing: '-0.04em',
                     marginBottom: 6,
-                    color: "#fff",
+                    color: '#fff',
                   }}
                 >
                   {s.value}
@@ -685,7 +685,7 @@ export default function LandingPage() {
                 <div
                   style={{
                     fontSize: 13,
-                    color: "rgba(255,255,255,0.4)",
+                    color: 'rgba(255,255,255,0.4)',
                     fontWeight: 500,
                   }}
                 >
@@ -698,7 +698,7 @@ export default function LandingPage() {
 
         {/* ── BOTTOM CTA ── */}
         <section
-          style={{ padding: "clamp(60px,10vw,100px) clamp(16px,4vw,24px)" }}
+          style={{ padding: 'clamp(60px,10vw,100px) clamp(16px,4vw,24px)' }}
         >
           <div className="ck-cta-grid">
             <div className="ck-gradient-border">
@@ -706,12 +706,12 @@ export default function LandingPage() {
                 <span className="ck-chip">🚀 Ready to deploy?</span>
                 <h3
                   style={{
-                    fontSize: "clamp(1.2rem,2.5vw,1.6rem)",
+                    fontSize: 'clamp(1.2rem,2.5vw,1.6rem)',
                     fontWeight: 700,
-                    letterSpacing: "-0.03em",
+                    letterSpacing: '-0.03em',
                     lineHeight: 1.2,
-                    margin: "16px 0 10px",
-                    color: "#fff",
+                    margin: '16px 0 10px',
+                    color: '#fff',
                   }}
                 >
                   Start building with a free account.
@@ -719,20 +719,20 @@ export default function LandingPage() {
                 <p
                   style={{
                     fontSize: 14,
-                    color: "rgba(255,255,255,0.45)",
+                    color: 'rgba(255,255,255,0.45)',
                     lineHeight: 1.65,
                     marginBottom: 28,
                   }}
                 >
-                  Speak to an expert for your{" "}
-                  <span style={{ color: "#60a5fa", fontWeight: 500 }}>Pro</span>{" "}
-                  or{" "}
-                  <span style={{ color: "#a78bfa", fontWeight: 500 }}>
+                  Speak to an expert for your{' '}
+                  <span style={{ color: '#60a5fa', fontWeight: 500 }}>Pro</span>{' '}
+                  or{' '}
+                  <span style={{ color: '#a78bfa', fontWeight: 500 }}>
                     Enterprise
-                  </span>{" "}
+                  </span>{' '}
                   needs.
                 </p>
-                <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+                <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
                   <Link className="ck-btn-primary" to="/login">
                     Start Deploying
                   </Link>
@@ -744,12 +744,12 @@ export default function LandingPage() {
               <span className="ck-chip">Enterprise</span>
               <h3
                 style={{
-                  fontSize: "clamp(1.2rem,2.5vw,1.6rem)",
+                  fontSize: 'clamp(1.2rem,2.5vw,1.6rem)',
                   fontWeight: 700,
-                  letterSpacing: "-0.03em",
+                  letterSpacing: '-0.03em',
                   lineHeight: 1.2,
-                  margin: "16px 0 10px",
-                  color: "#fff",
+                  margin: '16px 0 10px',
+                  color: '#fff',
                 }}
               >
                 Explore CloudKit Enterprise
@@ -757,7 +757,7 @@ export default function LandingPage() {
               <p
                 style={{
                   fontSize: 14,
-                  color: "rgba(255,255,255,0.45)",
+                  color: 'rgba(255,255,255,0.45)',
                   lineHeight: 1.65,
                   marginBottom: 28,
                 }}
@@ -773,18 +773,18 @@ export default function LandingPage() {
         {/* ── FOOTER ── */}
         <footer
           style={{
-            borderTop: "1px solid rgba(255,255,255,0.06)",
-            padding: "24px 32px",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
+            borderTop: '1px solid rgba(255,255,255,0.06)',
+            padding: '24px 32px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
           }}
         >
           <p
             style={{
               fontSize: 13,
-              color: "rgba(255,255,255,0.3)",
-              letterSpacing: "-0.01em",
+              color: 'rgba(255,255,255,0.3)',
+              letterSpacing: '-0.01em',
               margin: 0,
             }}
           >

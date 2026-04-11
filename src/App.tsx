@@ -1,13 +1,14 @@
-import { Routes, Route } from "react-router-dom";
-import "./App.css";
-import LandingPage from "./pages/LandingPage";
-import LoginPage from "./pages/LoginPage";
-import DashboardPage from "./pages/DashboardPage";
-import DeployPage from "./pages/DeployPage";
-import ProjectsPage from "./pages/ProjectsPage";
-import { Toaster } from "@/components/ui/sonner";
-import ClickSpark from "./components/ClickSpark";
-import SignupPage from "./pages/SignupPage";
+import { Routes, Route } from 'react-router-dom';
+import './App.css';
+import LandingPage from './pages/LandingPage';
+import LoginPage from './pages/LoginPage';
+import DashboardPage from './pages/DashboardPage';
+import DeployPage from './pages/DeployPage';
+import ProjectsPage from './pages/ProjectsPage';
+import { Toaster } from '@/components/ui/sonner';
+import ClickSpark from './components/ClickSpark';
+import SignupPage from './pages/SignupPage';
+import DeploymentsPage from './pages/DeploymentsPage';
 
 function App() {
   return (
@@ -29,6 +30,7 @@ function App() {
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/deploy-project" element={<DeployPage />} />
           <Route path="/projects" element={<ProjectsPage />} />
+          <Route path="/deployments" element={<DeploymentsPage />} />
         </Routes>
       </ClickSpark>
     </>

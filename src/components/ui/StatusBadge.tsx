@@ -1,20 +1,20 @@
 // ── Status badge ──────────────────────────────────────────────────────────
-type Status = "idle" | "deploying" | "success" | "error";
+type Status = 'idle' | 'deploying' | 'success' | 'error';
 
 export function StatusBadge({ status }: { status: Status }) {
   const map: Record<Status, { dot: string; label: string; text: string }> = {
-    idle: { dot: "bg-[#333]", label: "Ready to deploy", text: "text-[#555]" },
+    idle: { dot: 'bg-[#333]', label: 'Ready to deploy', text: 'text-[#555]' },
     deploying: {
-      dot: "bg-amber-400 animate-pulse",
-      label: "Deploying…",
-      text: "text-amber-400",
+      dot: 'bg-amber-400 animate-pulse',
+      label: 'Deploying…',
+      text: 'text-amber-400',
     },
     success: {
-      dot: "bg-emerald-500",
-      label: "Deployed",
-      text: "text-emerald-400",
+      dot: 'bg-emerald-500',
+      label: 'Deployed',
+      text: 'text-emerald-400',
     },
-    error: { dot: "bg-red-500", label: "Failed", text: "text-red-400" },
+    error: { dot: 'bg-red-500', label: 'Failed', text: 'text-red-400' },
   };
   const { dot, label, text } = map[status];
   return (

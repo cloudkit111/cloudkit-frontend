@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from 'react';
 
 type Props = {
   url: string;
@@ -26,17 +26,17 @@ export default function PreviewFrame({ url }: Props) {
     const frame = requestAnimationFrame(update);
     let ro: ResizeObserver | null = null;
 
-    if (typeof ResizeObserver !== "undefined") {
+    if (typeof ResizeObserver !== 'undefined') {
       ro = new ResizeObserver(update);
       ro.observe(el);
     } else {
-      window.addEventListener("resize", update);
+      window.addEventListener('resize', update);
     }
 
     return () => {
       cancelAnimationFrame(frame);
       if (ro) ro.disconnect();
-      else window.removeEventListener("resize", update);
+      else window.removeEventListener('resize', update);
     };
   }, []);
 
@@ -80,14 +80,14 @@ export default function PreviewFrame({ url }: Props) {
             loading="lazy"
             onLoad={() => setLoading(false)}
             style={{
-              border: "none",
+              border: 'none',
               width: `${RENDER_W}px`,
               height: `${RENDER_H}px`,
-              display: "block",
-              transformOrigin: "top left",
+              display: 'block',
+              transformOrigin: 'top left',
               transform: `scale(${scale})`,
-              transition: "transform 0.2s ease",
-              pointerEvents: interactive ? "auto" : "none",
+              transition: 'transform 0.2s ease',
+              pointerEvents: interactive ? 'auto' : 'none',
             }}
           />
 
@@ -107,7 +107,7 @@ export default function PreviewFrame({ url }: Props) {
             className="absolute bottom-0 left-0 right-0 h-10 pointer-events-none"
             style={{
               background:
-                "linear-gradient(to bottom, transparent, rgba(13,13,13,0.9))",
+                'linear-gradient(to bottom, transparent, rgba(13,13,13,0.9))',
             }}
           />
         </div>
