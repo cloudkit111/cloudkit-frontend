@@ -460,7 +460,7 @@ export default function DeployPage() {
                         auto-generated
                       </span>
                       <span className="text-[13px] text-[#3a3a3a] py-2 pr-3">
-                        .cloud-kit.app
+                        .app.cloudkit.page
                       </span>
                     </div>
                   ) : (
@@ -487,7 +487,7 @@ export default function DeployPage() {
                           }}
                         />
                         <span className="text-[13px] text-[#555] py-2 pr-3 pl-0 whitespace-nowrap flex-shrink-0">
-                          .cloud-kit.app
+                          .app.cloudkit.page
                         </span>
                       </div>
 
@@ -513,7 +513,7 @@ export default function DeployPage() {
                           >
                             <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
                           </svg>
-                          {customSlug}.cloud-kit.app
+                          {customSlug}.app.cloudkit.page
                         </span>
                       ) : (
                         <span className="text-[11px] text-[#444] pl-1">
