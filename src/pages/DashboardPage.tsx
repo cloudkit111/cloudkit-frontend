@@ -251,31 +251,28 @@ export default function DashboardPage() {
   // FIX: single useEffect handles everything in correct order
   useEffect(() => {
     const init = async () => {
-      // Step 1: fetch user first — confirms cookie is valid
-      const userData = await fetchUser();
-      console.log(userData);
-
-      if (!userData) return; // not logged in
-
-      // Step 2: check for installation_id in URL
+      // ✅ Check URL params FIRST, before any async call
       const params = new URLSearchParams(window.location.search);
       const installationId = params.get('installation_id');
 
       if (installationId) {
-        isSavingInstall.current = true; // 🔒 block redirect while saving
-        const toastId = toast.loading('Saving installation...');
+        isSavingInstall.current = true; // 🔒 Lock BEFORE fetchUser triggers setUser
+      }
 
+      const userData = await fetchUser();
+      if (!userData) return;
+
+      if (installationId) {
+        const toastId = toast.loading('Saving installation...');
         try {
           await api.post(
             `${import.meta.env.VITE_BACKEND_URI}/api/save-installation`,
             { installationId },
             { withCredentials: true },
           );
-
+          await fetchUser();
           toast.dismiss(toastId);
           toast.success('GitHub App installed successfully!');
-
-          await fetchUser();
           window.history.replaceState({}, '', window.location.pathname);
         } catch (err) {
           console.error('Failed to save installation:', err);
