@@ -253,6 +253,7 @@ export default function DashboardPage() {
     const init = async () => {
       // Step 1: fetch user first — confirms cookie is valid
       const userData = await fetchUser();
+      console.log(userData);
 
       if (!userData) return; // not logged in
 
