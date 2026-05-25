@@ -12,6 +12,7 @@ import { LogLine } from '@/components/ui/LogLine';
 import SuccessModal from '@/components/ui/SucessModal';
 import PreviewFrame from '@/components/preview/PreviewFrame';
 import { CircleArrowLeftDoubleIcon } from '@hugeicons/core-free-icons';
+import useTitle from '@/hooks/useTitle';
 
 // ── Init log messages shown before real logs arrive ───────────────────────
 const INIT_MESSAGES = [
@@ -35,6 +36,7 @@ interface EnvVar {
 
 // ── Main Deploy Page ──────────────────────────────────────────────────────
 export default function DeployPage() {
+  useTitle('Launch app')
   const githubRepoURL = sessionStorage.getItem('deployment_url') ?? '';
   const repoName =
     githubRepoURL.split('/').pop()?.replace('.git', '') ?? 'project';

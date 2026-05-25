@@ -5,6 +5,7 @@ import Navbar from '@/components/navbar/Navbar';
 import { LogLine } from '@/components/ui/LogLine';
 import { fetchUserDetails } from '@/services/userService';
 import { socket } from '../utils/socket';
+import useTitle from '@/hooks/useTitle';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -503,6 +504,7 @@ function DetailPanel({ project, onClose }: DetailPanelProps) {
 // ── Main Page ─────────────────────────────────────────────────────────────────
 
 const DeploymentsPage = () => {
+    useTitle('Deployments')
     const [user, setUser] = useState<NavUser>();
     const [projects, setProjects] = useState<Project[]>([]);
     const [loading, setLoading] = useState(true);

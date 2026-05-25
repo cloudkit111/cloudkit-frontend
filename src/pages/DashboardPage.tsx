@@ -9,6 +9,7 @@ import Navbar from '@/components/navbar/Navbar';
 import Search from '@/assets/svg/Search';
 import Private from '@/assets/svg/Private';
 import { fetchUserDetails } from '@/services/userService';
+import useTitle from '@/hooks/useTitle';
 
 //===============================================================================================//
 //===================================== MAIN DASHBOARD FILE =====================================//
@@ -17,6 +18,7 @@ import { fetchUserDetails } from '@/services/userService';
 const PAGE_SIZE = 5;
 
 export default function DashboardPage() {
+  useTitle('Dashboard')
   const [repos, setRepos] = useState<any[]>([]);
   const [user, setUser] = useState<any>(null);
   const [page, setPage] = useState(0);

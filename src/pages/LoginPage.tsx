@@ -1,3 +1,4 @@
+import useTitle from '@/hooks/useTitle';
 import cloudkitLogo from '../assets/cloudkit.png';
 
 const CLIENT_ID = import.meta.env.VITE_GITHUB_CLIENT_ID;
@@ -51,6 +52,7 @@ function GitHubIcon() {
 }
 
 export default function LoginPage() {
+  useTitle('Login')
   return (
     <>
       <style>{`

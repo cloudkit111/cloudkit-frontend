@@ -6,6 +6,7 @@ import axios from 'axios';
 import CloudKitLogo from '../assets/cloudkit.png';
 import Navbar from '@/components/navbar/Navbar';
 import { fetchUserDetails, handleLogout } from '@/services/userService';
+import useTitle from '@/hooks/useTitle';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -625,6 +626,7 @@ const PAGE_SIZE = 6;
 // ── ProjectsPage ──────────────────────────────────────────────────────────────
 
 export default function ProjectsPage() {
+    useTitle('Deployed apps')
     const [projects, setProjects] = useState<Project[]>([]);
     const [loading, setLoading] = useState(true);
     const [selected, setSelected] = useState<Project | null>(null);

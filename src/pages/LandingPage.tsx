@@ -1,10 +1,13 @@
 'use client';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import logo from '../assets/cloudkit.png';
 import { useEffect, useState } from 'react';
 import LightRays from '@/components/LightRays';
 import Navbar from '@/components/navbar/Navbar';
 import BorderGlow from '@/components/BorderGlow';
+import BottomCallToAction from '@/components/bottom/BottomCallToAction';
+import Stats from '@/components/bottom/Stats';
+import useTitle from '@/hooks/useTitle';
 
 /* ─────────────────────────────────────────────
    CloudKit Logo
@@ -108,64 +111,66 @@ export default function LandingPage() {
   }, []);
 
   const techs = [
-    'Next.js',
-    'React',
-    'Svelte',
-    'Vue',
-    'Nuxt',
-    'TypeScript',
-    'Tailwind',
-    'Prisma',
-    'tRPC',
-    'Drizzle',
-    'Bun',
-    'Deno',
-    'Node.js',
-    'Rust',
-    'Go',
-    'Python',
+    "React",
+    "Vite",
+    "Single Page Apps",
+    "Web Applications",
+    "Frontend Apps",
+    "Websites",
+    "Web Design",
+    "React",
+    "Vite",
+    "Single Page Apps",
+    "Web Applications",
+    "Frontend Apps",
+    "Websites",
+    "Web Design"
   ];
   const marqueeItems = [...techs, ...techs];
 
   const features = [
     {
       iconBg: 'rgba(251,191,36,0.15)',
-      title: 'Instant Deploy',
-      desc: 'Push to git and your app is live in seconds. Zero configuration needed for most frameworks.',
+      title: 'Git Push Deploys',
+      desc: 'Connect your repository and Cloudkit automatically builds and deploys every commit with minimal setup.',
     },
     {
       iconBg: 'rgba(59,130,246,0.15)',
-      title: 'Global Edge Network',
-      desc: 'CDN spanning 100+ cities worldwide. Sub-50ms latency, everywhere on the planet.',
+      title: 'Global CDN Delivery',
+      desc: 'Static assets are cached and delivered through Render’s global CDN with HTTP/2 and Brotli compression.',
     },
     {
       iconBg: 'rgba(34,197,94,0.15)',
-      title: 'Security First',
-      desc: 'Built-in DDoS protection, WAF, and Bot ID. Automatic HTTPS for every deployment.',
+      title: 'Automatic HTTPS',
+      desc: 'Every deployment gets free TLS certificates, secure HTTPS connections, and built-in DDoS protection.',
     },
     {
       iconBg: 'rgba(168,85,247,0.15)',
-      title: 'Observability',
-      desc: 'Real-time analytics, logs, and performance monitoring. Understand your app deeply.',
+      title: 'Instant Rollbacks',
+      desc: 'Redeploy previous builds instantly if a deployment breaks production or introduces regressions.',
     },
     {
       iconBg: 'rgba(239,68,68,0.15)',
-      title: 'AI Gateway',
-      desc: 'Unified gateway for all AI model providers with caching, rate limiting, and analytics.',
+      title: 'Framework Ready',
+      desc: 'Works out of the box with React, Vite. Coming soon with other modern JavaScript frameworks.',
     },
     {
       iconBg: 'rgba(20,184,166,0.15)',
-      title: 'CI/CD Built-in',
-      desc: 'Every PR gets a preview URL. Merge to main, deploy to production. Simple.',
+      title: 'Continuous Deployment',
+      desc: 'Deploy automatically on every push to your production branch with zero manual release steps.',
     },
   ];
 
   const stats = [
-    { value: '99.99%', label: 'Uptime SLA' },
-    { value: '100+', label: 'Edge locations' },
-    { value: '< 50ms', label: 'Global latency' },
-    { value: '10M+', label: 'Deployments' },
+    { value: 'Best-effort', label: 'Uptime SLA' },
+    { value: 'Global CDN', label: 'Edge delivery' },
+    { value: '~1 min', label: 'Cold start wake-up' },
+    { value: '750 hrs/mo', label: 'Free compute' },
   ];
+
+  const navigate = useNavigate();
+
+  useTitle('Home')
 
   return (
     <>
@@ -442,7 +447,7 @@ export default function LandingPage() {
             style={{
               position: 'relative',
               zIndex: 2,
-              maxWidth: 680,
+              maxWidth: '100%',
               width: '100%',
             }}
           >
@@ -457,14 +462,14 @@ export default function LandingPage() {
                     display: 'inline-block',
                   }}
                 />
-                Now in public beta
+                Now in public beta v1.1.3
               </span>
             </div>
 
             <h1
-              className="ck-fade-up-1"
+              className="ck-fade-up-1 text-[48px] lg:text-[100px]"
               style={{
-                fontSize: 'clamp(2.2rem,6vw,4rem)',
+                fontSize: '',
                 fontWeight: 700,
                 lineHeight: 1.08,
                 letterSpacing: '-0.03em',
@@ -472,48 +477,35 @@ export default function LandingPage() {
                 margin: 0,
               }}
             >
-              Build and deploy on the{' '}
+              Build and deploy on{' '}
               <span className="ck-shimmer">CloudKit</span>
             </h1>
 
             <p
-              className="ck-fade-up-2"
+              className="ck-fade-up-2 md:text-[22px]"
               style={{
                 marginTop: 20,
                 marginBottom: 36,
-                fontSize: 'clamp(0.95rem,2vw,1.1rem)',
-                color: 'rgba(255,255,255,0.48)',
+                fontSize: '',
+                color: '',
                 lineHeight: 1.72,
-                maxWidth: 460,
+                // maxWidth: 460,
                 margin: '20px auto 36px',
               }}
             >
-              CloudKit provides the developer tools and cloud infrastructure to
-              build, scale, and secure a faster, more personalized web.
+              Cloudkit automates builds, deployments, HTTPS, and global delivery
+              so developers can ship faster with less infrastructure overhead.
             </p>
 
             <div
               className="ck-fade-up-3"
               style={{ display: 'flex', justifyContent: 'center' }}
             >
-              <Link className="ck-btn-primary" to="/login">
-                <svg
-                  width="14"
-                  height="14"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <polyline points="16 3 21 3 21 8" />
-                  <line x1="4" y1="20" x2="21" y2="3" />
-                  <polyline points="21 16 21 21 16 21" />
-                  <line x1="15" y1="15" x2="21" y2="21" />
-                </svg>
-                Start Deploying
-              </Link>
+
+              <button onClick={()=> navigate('/login')} className='bg-white text-black p-3 rounded-[8px] w-auto md:text-xl'>
+                Deploy app
+              </button>
+
             </div>
 
             <HeroCloud />
@@ -606,8 +598,8 @@ export default function LandingPage() {
                 color: '#fff',
               }}
             >
-              Scale your <span className="ck-badge">Enterprise</span> without
-              compromising <span className="ck-badge">Security</span>
+              Update your <span className="ck-badge">Apps</span> without
+              worrying about <span className="ck-badge">CI/CD</span> Pipeline
             </h2>
           </div>
 
@@ -661,136 +653,10 @@ export default function LandingPage() {
         </section>
 
         {/* ── STATS ── */}
-        <section
-          style={{
-            borderTop: '1px solid rgba(255,255,255,0.06)',
-            borderBottom: '1px solid rgba(255,255,255,0.06)',
-            padding: 'clamp(40px,8vw,64px) 24px',
-          }}
-        >
-          <div className="ck-stats">
-            {stats.map((s, i) => (
-              <div key={i}>
-                <div
-                  style={{
-                    fontSize: 'clamp(1.6rem,3vw,2.2rem)',
-                    fontWeight: 700,
-                    letterSpacing: '-0.04em',
-                    marginBottom: 6,
-                    color: '#fff',
-                  }}
-                >
-                  {s.value}
-                </div>
-                <div
-                  style={{
-                    fontSize: 13,
-                    color: 'rgba(255,255,255,0.4)',
-                    fontWeight: 500,
-                  }}
-                >
-                  {s.label}
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
+        <Stats stats={stats} />
 
         {/* ── BOTTOM CTA ── */}
-        <section
-          style={{ padding: 'clamp(60px,10vw,100px) clamp(16px,4vw,24px)' }}
-        >
-          <div className="ck-cta-grid">
-            <div className="ck-gradient-border">
-              <div className="ck-gradient-inner">
-                <span className="ck-chip">🚀 Ready to deploy?</span>
-                <h3
-                  style={{
-                    fontSize: 'clamp(1.2rem,2.5vw,1.6rem)',
-                    fontWeight: 700,
-                    letterSpacing: '-0.03em',
-                    lineHeight: 1.2,
-                    margin: '16px 0 10px',
-                    color: '#fff',
-                  }}
-                >
-                  Start building with a free account.
-                </h3>
-                <p
-                  style={{
-                    fontSize: 14,
-                    color: 'rgba(255,255,255,0.45)',
-                    lineHeight: 1.65,
-                    marginBottom: 28,
-                  }}
-                >
-                  Speak to an expert for your{' '}
-                  <span style={{ color: '#60a5fa', fontWeight: 500 }}>Pro</span>{' '}
-                  or{' '}
-                  <span style={{ color: '#a78bfa', fontWeight: 500 }}>
-                    Enterprise
-                  </span>{' '}
-                  needs.
-                </p>
-                <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-                  <Link className="ck-btn-primary" to="/login">
-                    Start Deploying
-                  </Link>
-                </div>
-              </div>
-            </div>
-
-            <div className="ck-card" style={{ padding: 32 }}>
-              <span className="ck-chip">Enterprise</span>
-              <h3
-                style={{
-                  fontSize: 'clamp(1.2rem,2.5vw,1.6rem)',
-                  fontWeight: 700,
-                  letterSpacing: '-0.03em',
-                  lineHeight: 1.2,
-                  margin: '16px 0 10px',
-                  color: '#fff',
-                }}
-              >
-                Explore CloudKit Enterprise
-              </h3>
-              <p
-                style={{
-                  fontSize: 14,
-                  color: 'rgba(255,255,255,0.45)',
-                  lineHeight: 1.65,
-                  marginBottom: 28,
-                }}
-              >
-                With an interactive product tour, trial, or personalized demo
-                tailored to your team.
-              </p>
-              <div className="ck-btn-outline">Explore Enterprise →</div>
-            </div>
-          </div>
-        </section>
-
-        {/* ── FOOTER ── */}
-        <footer
-          style={{
-            borderTop: '1px solid rgba(255,255,255,0.06)',
-            padding: '24px 32px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-        >
-          <p
-            style={{
-              fontSize: 13,
-              color: 'rgba(255,255,255,0.3)',
-              letterSpacing: '-0.01em',
-              margin: 0,
-            }}
-          >
-            © {new Date().getFullYear()} CloudKit. All rights reserved.
-          </p>
-        </footer>
+        <BottomCallToAction />
       </div>
     </>
   );
