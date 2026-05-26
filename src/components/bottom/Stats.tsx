@@ -1,6 +1,6 @@
-import React from 'react'
+import { type StatType } from "@/types"
 
-const Stats = ({ stats }) => {
+const Stats = ({ stats }: { stats: StatType[] }) => {
     return (
         <div>
             <section
@@ -11,7 +11,7 @@ const Stats = ({ stats }) => {
                 }}
             >
                 <div className="ck-stats">
-                    {stats.map((s: any, i: any) => (
+                    {stats.map((s: StatType, i: number) => (
                         <div key={i}>
                             <div
                                 style={{

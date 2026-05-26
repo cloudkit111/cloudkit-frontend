@@ -8,6 +8,7 @@ import BorderGlow from '@/components/BorderGlow';
 import BottomCallToAction from '@/components/bottom/BottomCallToAction';
 import Stats from '@/components/bottom/Stats';
 import useTitle from '@/hooks/useTitle';
+import { type StatType } from '@/types';
 
 /* ─────────────────────────────────────────────
    CloudKit Logo
@@ -161,7 +162,7 @@ export default function LandingPage() {
     },
   ];
 
-  const stats = [
+  const stats: StatType[] = [
     { value: 'Best-effort', label: 'Uptime SLA' },
     { value: 'Global CDN', label: 'Edge delivery' },
     { value: '~1 min', label: 'Cold start wake-up' },
@@ -502,7 +503,7 @@ export default function LandingPage() {
               style={{ display: 'flex', justifyContent: 'center' }}
             >
 
-              <button onClick={()=> navigate('/login')} className='bg-white text-black p-3 rounded-[8px] w-auto md:text-xl'>
+              <button onClick={() => navigate('/login')} className='bg-white text-black p-3 rounded-[8px] w-auto md:text-xl'>
                 Deploy app
               </button>
 
