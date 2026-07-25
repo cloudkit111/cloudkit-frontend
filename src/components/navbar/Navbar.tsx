@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useState } from 'react';
-import logo from '../../assets/cloudkit.png';
+import logo from '../../assets/cloudkit-new.png';
 
 type NavUser = {
   fullname?: string;

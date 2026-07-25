@@ -1,6 +1,6 @@
 'use client';
 import { Link, useNavigate } from 'react-router-dom';
-import logo from '../assets/cloudkit.png';
+import logo from '../assets/cloudkit-new.png';
 import { useEffect, useState } from 'react';
 import LightRays from '@/components/LightRays';
 import Navbar from '@/components/navbar/Navbar';

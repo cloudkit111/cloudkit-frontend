@@ -3,7 +3,7 @@ import axios from 'axios';
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { socket } from '../utils/socket';
-import logo from '../assets/cloudkit.png';
+import logo from '../assets/cloudkit-new.png';
 import api from '@/config/api-client';
 import ConfettiCanvas from '@/components/canvas/ConfettiCanvas';
 import DeployCanvas from '@/components/canvas/DeployCanvas';
@@ -237,16 +237,16 @@ export default function DeployPage() {
       });
 
       const res = await api.post(
-  `${import.meta.env.VITE_BACKEND_URI}/project`,
-  {
-    gitURL: githubRepoURL,
-    repoName,
-    envs: envsObject,  // ← Always send it, even if empty {}
-    ...(subdomainMode === 'custom' && customSlug
-      ? { userSlug: customSlug }
-      : {}),
-  },
-);
+        `${import.meta.env.VITE_BACKEND_URI}/project`,
+        {
+          gitURL: githubRepoURL,
+          repoName,
+          envs: envsObject,  // ← Always send it, even if empty {}
+          ...(subdomainMode === 'custom' && customSlug
+            ? { userSlug: customSlug }
+            : {}),
+        },
+      );
 
       const url =
         res?.data?.data?.url ??
@@ -462,7 +462,7 @@ export default function DeployPage() {
                         auto-generated
                       </span>
                       <span className="text-[13px] text-[#3a3a3a] py-2 pr-3">
-                        .app.cloudkit.page
+                        .cloudkit.page
                       </span>
                     </div>
                   ) : (
@@ -489,7 +489,7 @@ export default function DeployPage() {
                           }}
                         />
                         <span className="text-[13px] text-[#555] py-2 pr-3 pl-0 whitespace-nowrap flex-shrink-0">
-                          .app.cloudkit.page
+                          .cloudkit.page
                         </span>
                       </div>
 
@@ -515,7 +515,7 @@ export default function DeployPage() {
                           >
                             <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
                           </svg>
-                          {customSlug}.app.cloudkit.page
+                          {customSlug}.cloudkit.page
                         </span>
                       ) : (
                         <span className="text-[11px] text-[#444] pl-1">

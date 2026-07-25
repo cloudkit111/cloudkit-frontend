@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import React, { useEffect, useState, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import logo from '../assets/cloudkit.png';
+import logo from '../assets/cloudkit-new.png';
 import axios from 'axios';
-import CloudKitLogo from '../assets/cloudkit.png';
+import CloudKitLogo from '../assets/cloudkit-new.png';
 import Navbar from '@/components/navbar/Navbar';
 import { fetchUserDetails, handleLogout } from '@/services/userService';
 import useTitle from '@/hooks/useTitle';

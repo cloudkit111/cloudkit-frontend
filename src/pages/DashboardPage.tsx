@@ -2,7 +2,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
-import logo from '../assets/cloudkit.png';
+import logo from '../assets/cloudkit-new.png';
 import api from '../config/api-client';
 import { toast } from 'sonner';
 import Navbar from '@/components/navbar/Navbar';

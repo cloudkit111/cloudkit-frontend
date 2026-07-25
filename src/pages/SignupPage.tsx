@@ -1,5 +1,5 @@
 import useTitle from '@/hooks/useTitle';
-import cloudkitLogo from '../assets/cloudkit.png';
+import cloudkitLogo from '../assets/cloudkit-new.png';
 
 const CLIENT_ID = import.meta.env.VITE_GITHUB_CLIENT_ID;
 
