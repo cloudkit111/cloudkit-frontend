@@ -49,6 +49,7 @@ function App() {
           <Route path="/" element={<LandingPage />} />
           <Route path="/auth/login" element={<LoginPage />} />
           <Route path="/auth/signup" element={<SignupPage />} />
+          <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/deploy-new-project" element={<DashboardPage />} />
           <Route path="/deploy-project" element={<DeployPage />} />
           <Route path="/projects" element={<ProjectsPage />} />
