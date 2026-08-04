@@ -14,6 +14,7 @@ export const fetchUserDetails = async () => {
 export const handleLogout = async () => {
   try {
     await api.get(`${import.meta.env.VITE_BACKEND_URI}/auth/logout`);
+    localStorage.clear();
     window.location.href = '/';
   } catch (err) {
     console.log(err);

@@ -1,43 +1,32 @@
 import { type StatType } from "@/types"
 
+const ACCENTS = ['#0071e3', '#34c759', '#f5a623', '#af52de']
+
 const Stats = ({ stats }: { stats: StatType[] }) => {
     return (
-        <div>
-            <section
-                style={{
-                    borderTop: '1px solid rgba(255,255,255,0.06)',
-                    borderBottom: '1px solid rgba(255,255,255,0.06)',
-                    padding: 'clamp(40px,8vw,64px) 24px',
-                }}
-            >
-                <div className="ck-stats">
-                    {stats.map((s: StatType, i: number) => (
-                        <div key={i}>
+        <section className="ck-status-section">
+            <div className="ck-status-panel">
+                <div className="ck-status-header">
+                    <span className="ck-status-dot" aria-hidden="true" />
+                    <span className="ck-status-header-label">
+                        <b>All systems operational</b> — live platform metrics
+                    </span>
+                </div>
+                <div className="ck-status-row">
+                    {stats.map((s, i) => (
+                        <div className="ck-status-item" key={i}>
                             <div
-                                style={{
-                                    fontSize: 'clamp(1.6rem,3vw,2.2rem)',
-                                    fontWeight: 700,
-                                    letterSpacing: '-0.04em',
-                                    marginBottom: 6,
-                                    color: '#fff',
-                                }}
+                                className="ck-status-value"
+                                style={{ color: ACCENTS[i % ACCENTS.length] }}
                             >
                                 {s.value}
                             </div>
-                            <div
-                                style={{
-                                    fontSize: 13,
-                                    color: 'rgba(255,255,255,0.4)',
-                                    fontWeight: 500,
-                                }}
-                            >
-                                {s.label}
-                            </div>
+                            <div className="ck-status-tag">{s.label}</div>
                         </div>
                     ))}
                 </div>
-            </section>
-        </div>
+            </div>
+        </section>
     )
 }
 

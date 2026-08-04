@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Navbar from '@/components/navbar/Navbar';
 import { LogLine } from '@/components/ui/LogLine';
-import { fetchUserDetails } from '@/services/userService';
+import { fetchUserDetails, handleLogout } from '@/services/userService';
 import { socket } from '../utils/socket';
 import useTitle from '@/hooks/useTitle';
 
@@ -79,8 +79,8 @@ function parseGithubRepo(gitURL?: string): { owner: string; repo: string } | nul
 function Monogram({ name, size = 32 }: { name: string; size?: number }) {
     return (
         <div
-            className="rounded-lg flex items-center justify-center font-bold select-none flex-shrink-0 text-[#e5e5e5] border border-[#2a2a2a]"
-            style={{ width: size, height: size, fontSize: size * 0.34, background: '#1a1a1a' }}
+            className="rounded-lg flex items-center justify-center font-semibold select-none flex-shrink-0 text-[#6e6e73] border border-[#e5e5e7] bg-[#f5f5f7]"
+            style={{ width: size, height: size, fontSize: size * 0.32 }}
         >
             {repoInitials(name)}
         </div>
@@ -89,11 +89,11 @@ function Monogram({ name, size = 32 }: { name: string; size?: number }) {
 
 function StatusDot({ status }: { status: LogStatus }) {
     const colors: Record<LogStatus, string> = {
-        idle: '#555',
-        connecting: '#febc2e',
-        live: '#28c840',
-        ended: '#555',
-        error: '#ff5f57',
+        idle: '#86868b',
+        connecting: '#ff9500',
+        live: '#34c759',
+        ended: '#86868b',
+        error: '#ff3b30',
     };
     const labels: Record<LogStatus, string> = {
         idle: 'idle',
@@ -122,23 +122,23 @@ function CommitRow({ commit }: { commit: Commit }) {
             href={commit.url}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-start gap-3 px-4 py-3 hover:bg-[#111] transition-colors duration-100 group no-underline"
+            className="flex items-start gap-3 px-4 py-3 hover:bg-[#f5f5f7] transition-colors duration-100 group no-underline"
         >
-            <div className="w-7 h-7 rounded-full bg-[#1a1a1a] border border-[#222] flex items-center justify-center flex-shrink-0 mt-0.5">
+            <div className="w-7 h-7 rounded-full bg-[#f5f5f7] border border-[#e5e5e7] flex items-center justify-center flex-shrink-0 mt-0.5">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
-                    <circle cx="12" cy="12" r="4" stroke="#555" strokeWidth="2" />
-                    <path d="M12 2v6M12 16v6M2 12h6M16 12h6" stroke="#555" strokeWidth="1.5" strokeLinecap="round" />
+                    <circle cx="12" cy="12" r="4" stroke="#86868b" strokeWidth="2" />
+                    <path d="M12 2v6M12 16v6M2 12h6M16 12h6" stroke="#86868b" strokeWidth="1.5" strokeLinecap="round" />
                 </svg>
             </div>
             <div className="min-w-0 flex-1">
-                <p className="text-[13px] text-[#ccc] leading-snug truncate group-hover:text-[#ededed] transition-colors">
+                <p className="text-[13px] text-[#1d1d1f] leading-snug truncate group-hover:text-[#0071e3] transition-colors">
                     {commit.message}
                 </p>
-                <p className="text-[11px] text-[#555] mt-0.5 font-mono">
+                <p className="text-[11px] text-[#86868b] mt-0.5 font-mono">
                     {commit.author} · {timeAgo(commit.date)}
                 </p>
             </div>
-            <span className="text-[10px] font-mono text-[#333] group-hover:text-[#555] flex-shrink-0 mt-0.5 transition-colors">
+            <span className="text-[10px] font-mono text-[#86868b] group-hover:text-[#0071e3] flex-shrink-0 mt-0.5 transition-colors">
                 {commit.sha.slice(0, 7)}
             </span>
         </a>
@@ -161,28 +161,28 @@ function ProjectRow({ project, selected, onClick }: ProjectRowProps) {
     return (
         <div
             onClick={onClick}
-            className="flex items-center gap-3 px-4 py-3.5 cursor-pointer transition-all duration-150 group border-b border-[#1a1a1a] last:border-b-0"
-            style={{ background: selected ? '#161616' : 'transparent' }}
-            onMouseEnter={e => { if (!selected) (e.currentTarget as HTMLDivElement).style.background = '#111'; }}
+            className="relative flex items-center gap-3 px-4 py-3.5 cursor-pointer transition-all duration-150 group border-b border-[#e5e5e7] last:border-b-0"
+            style={{ background: selected ? '#f5f5f7' : 'transparent' }}
+            onMouseEnter={e => { if (!selected) (e.currentTarget as HTMLDivElement).style.background = '#fafafc'; }}
             onMouseLeave={e => { if (!selected) (e.currentTarget as HTMLDivElement).style.background = 'transparent'; }}
         >
             {/* Active indicator bar */}
             <div
                 className="absolute left-0 w-0.5 h-8 rounded-full transition-opacity duration-150"
-                style={{ background: '#ededed', opacity: selected ? 1 : 0 }}
+                style={{ background: '#0071e3', opacity: selected ? 1 : 0 }}
             />
             <Monogram name={name} size={34} />
             <div className="min-w-0 flex-1">
-                <p className="text-[13px] font-medium text-[#ededed] truncate">{name}</p>
+                <p className="text-[13px] font-medium text-[#1d1d1f] truncate">{name}</p>
                 {hostname && (
-                    <p className="text-[11px] text-[#555] font-mono truncate mt-0.5">{hostname}</p>
+                    <p className="text-[11px] text-[#86868b] font-mono truncate mt-0.5">{hostname}</p>
                 )}
             </div>
-            {ago && <span className="text-[11px] text-[#444] flex-shrink-0">{ago}</span>}
+            {ago && <span className="text-[11px] text-[#86868b] flex-shrink-0">{ago}</span>}
             <svg
                 width="14" height="14" viewBox="0 0 24 24" fill="none"
                 className="flex-shrink-0 transition-all duration-150"
-                style={{ color: selected ? '#ededed' : '#333', transform: selected ? 'translateX(0)' : 'translateX(-4px)', opacity: selected ? 1 : 0.5 }}
+                style={{ color: selected ? '#0071e3' : '#c7c7cc', transform: selected ? 'translateX(0)' : 'translateX(-4px)', opacity: selected ? 1 : 0.6 }}
             >
                 <path d="M9 18l6-6-6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
@@ -285,16 +285,16 @@ function DetailPanel({ project, onClose }: DetailPanelProps) {
     return (
         <div className="flex flex-col h-full">
             {/* Panel header */}
-            <div className="flex items-center gap-3 px-5 py-4 border-b border-[#1e1e1e] flex-shrink-0">
+            <div className="flex items-center gap-3 px-5 py-4 border-b border-[#e5e5e7] flex-shrink-0">
                 <Monogram name={name} size={36} />
                 <div className="min-w-0 flex-1">
-                    <h2 className="text-[15px] font-semibold text-[#ededed] truncate">{name}</h2>
+                    <h2 className="text-[15px] font-semibold text-[#1d1d1f] truncate">{name}</h2>
                     {project.project_url && (
                         <a
                             href={project.project_url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-[11px] font-mono text-[#555] hover:text-[#60a5fa] transition-colors truncate block"
+                            className="text-[11px] font-mono text-[#86868b] hover:text-[#0071e3] transition-colors truncate block"
                         >
                             {safeHostname(project.project_url)}
                         </a>
@@ -306,14 +306,14 @@ function DetailPanel({ project, onClose }: DetailPanelProps) {
                             href={project.project_url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="px-3 py-1.5 rounded-lg border border-[#2a2a2a] bg-white text-black text-[12px] font-medium cursor-pointer transition-all duration-150 hover:bg-[#e5e5e5] no-underline"
+                            className="px-3.5 py-1.5 rounded-full bg-[#0071e3] text-white text-[12px] font-medium cursor-pointer transition-colors duration-150 hover:bg-[#0077ed] no-underline"
                         >
                             Visit →
                         </a>
                     )}
                     <button
                         onClick={onClose}
-                        className="w-7 h-7 rounded-lg border border-[#222] bg-[#1a1a1a] flex items-center justify-center text-[#555] cursor-pointer transition-all duration-150 hover:border-[#333] hover:text-[#ccc] text-sm"
+                        className="w-7 h-7 rounded-full border border-[#e5e5e7] bg-[#f5f5f7] flex items-center justify-center text-[#86868b] cursor-pointer transition-all duration-150 hover:border-[#d2d2d7] hover:text-[#1d1d1f] text-sm"
                         aria-label="Close"
                     >
                         ✕
@@ -322,36 +322,32 @@ function DetailPanel({ project, onClose }: DetailPanelProps) {
             </div>
 
             {/* Meta row */}
-            <div className="flex items-center gap-4 px-5 py-3 border-b border-[#1e1e1e] flex-shrink-0 flex-wrap">
+            <div className="flex items-center gap-4 px-5 py-3 border-b border-[#e5e5e7] flex-shrink-0 flex-wrap">
                 <div className="flex items-center gap-1.5">
                     <svg width="11" height="11" viewBox="0 0 24 24" fill="none">
-                        <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z" fill="#555" />
+                        <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z" fill="#86868b" />
                     </svg>
-                    <span className="text-[11px] text-[#555] font-mono truncate max-w-[200px]">
+                    <span className="text-[11px] text-[#86868b] font-mono truncate max-w-[200px]">
                         {project.gitURL ? parseGithubRepo(project.gitURL)?.owner + '/' + parseGithubRepo(project.gitURL)?.repo : project.slug}
                     </span>
                 </div>
                 <div className="flex items-center gap-1.5">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#28c840]" />
-                    <span className="text-[11px] text-[#555]">deployed {timeAgo(project.updatedAt ?? project.createdAt)}</span>
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#34c759]" />
+                    <span className="text-[11px] text-[#86868b]">deployed {timeAgo(project.updatedAt ?? project.createdAt)}</span>
                 </div>
-                <div className="text-[11px] font-mono text-[#444]">{project.slug}</div>
+                <div className="text-[11px] font-mono text-[#86868b]">{project.slug}</div>
             </div>
 
             {/* Tab bar */}
-            <div className="flex items-center gap-0 px-5 border-b border-[#1e1e1e] flex-shrink-0">
+            <div className="flex items-center gap-0 px-5 border-b border-[#e5e5e7] flex-shrink-0">
                 {(['logs', 'commits'] as const).map(tab => (
                     <button
                         key={tab}
                         onClick={() => setActiveTab(tab)}
-                        className="px-4 py-2.5 text-[12px] font-medium capitalize transition-all duration-150 border-b-2 -mb-px"
+                        className="px-4 py-2.5 text-[12px] font-medium capitalize transition-all duration-150 -mb-px cursor-pointer bg-transparent"
                         style={{
-                            color: activeTab === tab ? '#ededed' : '#555',
-                            borderBottomColor: activeTab === tab ? '#ededed' : 'transparent',
-                            cursor: 'pointer',
-                            background: 'none',
-                            border: activeTab === tab ? 'none' : 'none',
-                            borderBottom: activeTab === tab ? '2px solid #ededed' : '2px solid transparent',
+                            color: activeTab === tab ? '#1d1d1f' : '#86868b',
+                            borderBottom: activeTab === tab ? '2px solid #0071e3' : '2px solid transparent',
                         }}
                     >
                         {tab === 'logs' ? (
@@ -363,7 +359,7 @@ function DetailPanel({ project, onClose }: DetailPanelProps) {
                             <span className="flex items-center gap-1.5">
                                 Git Commits
                                 {commits.length > 0 && (
-                                    <span className="text-[10px] bg-[#1e1e1e] text-[#555] px-1.5 py-0.5 rounded-full">
+                                    <span className="text-[10px] bg-[#f5f5f7] text-[#6e6e73] px-1.5 py-0.5 rounded-full border border-[#e5e5e7]">
                                         {commits.length}
                                     </span>
                                 )}
@@ -379,25 +375,25 @@ function DetailPanel({ project, onClose }: DetailPanelProps) {
                 {/* ── Logs Tab ── */}
                 {activeTab === 'logs' && (
                     <div className="flex flex-col h-full">
-                        {/* macOS-style terminal header */}
-                        <div className="flex items-center justify-between px-4 py-2.5 border-b border-[#1a1a1a] bg-[#0d0d0d] flex-shrink-0">
+                        {/* macOS-style terminal header (kept dark — reads as a real terminal even on a light page) */}
+                        <div className="flex items-center justify-between px-4 py-2.5 border-b border-black/20 bg-[#1d1d1f] flex-shrink-0">
                             <div className="flex items-center gap-2">
                                 <div className="flex gap-1.5">
                                     <span className="w-2.5 h-2.5 rounded-full bg-[#ff5f57]" />
                                     <span className="w-2.5 h-2.5 rounded-full bg-[#febc2e]" />
                                     <span className="w-2.5 h-2.5 rounded-full bg-[#28c840]" />
                                 </div>
-                                <span className="text-[10px] text-[#444] tracking-wider uppercase ml-1">terminal</span>
+                                <span className="text-[10px] text-white/35 tracking-wider uppercase ml-1">terminal</span>
                             </div>
                             <div className="flex items-center gap-3">
                                 {logs.length > 0 && (
-                                    <span className="text-[10px] font-mono text-[#333]">{logs.length} lines</span>
+                                    <span className="text-[10px] font-mono text-white/30">{logs.length} lines</span>
                                 )}
                                 <StatusDot status={logStatus} />
                                 {logs.length > 0 && (
                                     <button
                                         onClick={() => setLogs([])}
-                                        className="text-[10px] text-[#333] hover:text-[#666] transition-colors cursor-pointer"
+                                        className="text-[10px] text-white/30 hover:text-white/70 transition-colors cursor-pointer"
                                     >
                                         Clear
                                     </button>
@@ -406,26 +402,26 @@ function DetailPanel({ project, onClose }: DetailPanelProps) {
                         </div>
 
                         <div
-                            className="flex-1 overflow-y-auto px-4 py-3 font-mono bg-[#080808] log-scroll"
+                            className="flex-1 overflow-y-auto px-4 py-3 font-mono bg-[#121214] log-scroll"
                             style={{ minHeight: 0 }}
                         >
                             {logs.length === 0 ? (
                                 <div className="h-full flex flex-col items-center justify-center gap-3 select-none py-12">
                                     {logStatus === 'connecting' ? (
                                         <>
-                                            <span className="w-4 h-4 border-2 border-[#333] border-t-[#555] rounded-full animate-spin" />
-                                            <span className="text-[12px] text-[#333] font-mono">Connecting to log stream…</span>
+                                            <span className="w-4 h-4 border-2 border-white/15 border-t-white/40 rounded-full animate-spin" />
+                                            <span className="text-[12px] text-white/30 font-mono">Connecting to log stream…</span>
                                         </>
                                     ) : (
                                         <>
-                                            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" className="text-[#222]">
+                                            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" className="text-white/15">
                                                 <rect x="3" y="3" width="18" height="18" rx="3" stroke="currentColor" strokeWidth="1.5" />
                                                 <path d="M7 8h10M7 12h7M7 16h5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
                                             </svg>
-                                            <span className="text-[12px] text-[#333] font-mono">
-                                                Waiting for logs from <span className="text-[#444]">{project.slug}</span>…
+                                            <span className="text-[12px] text-white/30 font-mono">
+                                                Waiting for logs from <span className="text-white/45">{project.slug}</span>…
                                             </span>
-                                            <span className="text-[10px] text-[#2a2a2a] font-mono">
+                                            <span className="text-[10px] text-white/20 font-mono">
                                                 Live logs will appear here when a deployment is triggered
                                             </span>
                                         </>
@@ -442,11 +438,11 @@ function DetailPanel({ project, onClose }: DetailPanelProps) {
                         </div>
 
                         {logs.length > 0 && (
-                            <div className="px-4 py-2 border-t border-[#111] flex items-center justify-between bg-[#0a0a0a] flex-shrink-0">
-                                <span className="text-[10px] text-[#333] font-mono">
+                            <div className="px-4 py-2 border-t border-white/10 flex items-center justify-between bg-[#18181a] flex-shrink-0">
+                                <span className="text-[10px] text-white/30 font-mono">
                                     {logStatus === 'live' ? '● live stream' : `● ${logStatus}`}
                                 </span>
-                                <span className="text-[10px] text-[#333] font-mono">{project.slug}</span>
+                                <span className="text-[10px] text-white/30 font-mono">{project.slug}</span>
                             </div>
                         )}
                     </div>
@@ -458,7 +454,7 @@ function DetailPanel({ project, onClose }: DetailPanelProps) {
                         {commitsLoading && (
                             <div className="flex flex-col gap-0">
                                 {Array.from({ length: 6 }).map((_, i) => (
-                                    <div key={i} className="flex items-center gap-3 px-4 py-3 border-b border-[#1a1a1a]">
+                                    <div key={i} className="flex items-center gap-3 px-4 py-3 border-b border-[#e5e5e7]">
                                         <div className="animate-shimmer w-7 h-7 rounded-full flex-shrink-0" />
                                         <div className="flex-1 flex flex-col gap-1.5">
                                             <div className="animate-shimmer h-3 rounded" style={{ width: `${45 + i * 7}%` }} />
@@ -472,23 +468,23 @@ function DetailPanel({ project, onClose }: DetailPanelProps) {
 
                         {!commitsLoading && commitsError && (
                             <div className="flex flex-col items-center justify-center py-16 gap-3 text-center px-6">
-                                <div className="w-10 h-10 rounded-xl bg-[#111] border border-[#1e1e1e] flex items-center justify-center text-lg">⚠️</div>
-                                <p className="text-[13px] text-[#555]">Could not load commits</p>
-                                <p className="text-[11px] text-[#333]">{commitsError}</p>
+                                <div className="w-10 h-10 rounded-xl bg-[#f5f5f7] border border-[#e5e5e7] flex items-center justify-center text-lg">⚠️</div>
+                                <p className="text-[13px] text-[#6e6e73]">Could not load commits</p>
+                                <p className="text-[11px] text-[#86868b]">{commitsError}</p>
                                 {!project.gitURL && (
-                                    <p className="text-[11px] text-[#333]">No gitURL found on this project</p>
+                                    <p className="text-[11px] text-[#86868b]">No gitURL found on this project</p>
                                 )}
                             </div>
                         )}
 
                         {!commitsLoading && !commitsError && commits.length === 0 && (
                             <div className="flex flex-col items-center justify-center py-16 gap-3 text-center">
-                                <p className="text-[13px] text-[#555]">No commits found</p>
+                                <p className="text-[13px] text-[#6e6e73]">No commits found</p>
                             </div>
                         )}
 
                         {!commitsLoading && commits.length > 0 && (
-                            <div className="flex flex-col divide-y divide-[#1a1a1a]">
+                            <div className="flex flex-col divide-y divide-[#e5e5e7]">
                                 {commits.map(commit => (
                                     <CommitRow key={commit.sha} commit={commit} />
                                 ))}
@@ -565,30 +561,30 @@ const DeploymentsPage = () => {
         }
         .anim-fadeUp { animation: fadeUp 0.3s ease forwards; }
         .animate-shimmer {
-          background: linear-gradient(90deg, #1a1a1a 25%, #242424 50%, #1a1a1a 75%);
+          background: linear-gradient(90deg, #f0f0f2 25%, #f7f7f8 50%, #f0f0f2 75%);
           background-size: 200% 100%;
           animation: shimmer 1.5s infinite;
         }
         .log-scroll::-webkit-scrollbar { width: 4px; }
         .log-scroll::-webkit-scrollbar-track { background: transparent; }
-        .log-scroll::-webkit-scrollbar-thumb { background: #1e1e1e; border-radius: 2px; }
-        .log-scroll::-webkit-scrollbar-thumb:hover { background: #2a2a2a; }
+        .log-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 2px; }
+        .log-scroll::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.16); }
       `}</style>
 
             <div
-                className="min-h-screen bg-[#0a0a0a] text-[#ededed] flex flex-col"
-                style={{ fontFamily: "'Geist', -apple-system, BlinkMacSystemFont, sans-serif" }}
+                className="min-h-screen bg-[#fbfbfd] text-[#1d1d1f] flex flex-col"
+                style={{ fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', system-ui, sans-serif" }}
             >
-                <Navbar variant="auth" user={user} scrolled />
+                <Navbar variant="auth" user={user} scrolled onLogout={handleLogout} />
 
                 <main className="flex-1 mt-10 flex flex-col max-w-[1200px] w-full mx-auto px-6 pt-10 pb-6 anim-fadeUp min-h-0">
 
                     {/* Page title */}
                     <div className="flex items-center justify-between mb-6 flex-shrink-0 flex-wrap gap-3">
                         <div>
-                            <h1 className="text-[26px] font-semibold tracking-[-0.5px] text-[#ededed]">Deployments</h1>
+                            <h1 className="text-[26px] font-semibold tracking-[-0.02em] text-[#1d1d1f]">Deployments</h1>
                             {!loading && !fetchError && (
-                                <p className="text-[13px] text-[#555] mt-0.5">
+                                <p className="text-[13px] text-[#6e6e73] mt-0.5">
                                     {projects.length} {projects.length === 1 ? 'project' : 'projects'} · click a project to view logs and commits
                                 </p>
                             )}
@@ -596,13 +592,13 @@ const DeploymentsPage = () => {
                         <div className="flex items-center gap-2">
                             <button
                                 onClick={() => navigate('/projects')}
-                                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#222] bg-[#111] text-xs text-[#666] cursor-pointer transition-all duration-150 hover:border-[#333] hover:text-[#ccc]"
+                                className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-[#e5e5e7] bg-[#f5f5f7] text-[13px] text-[#1d1d1f] cursor-pointer transition-all duration-150 hover:bg-[#ececee]"
                             >
                                 ← All Projects
                             </button>
                             <button
-                                onClick={() => navigate('/dashboard')}
-                                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#2a2a2a] bg-white text-black text-xs font-medium cursor-pointer transition-all duration-150 hover:bg-[#e5e5e5]"
+                                onClick={() => navigate('/deploy-new-project')}
+                                className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[#0071e3] text-white text-[13px] font-medium cursor-pointer transition-colors duration-150 hover:bg-[#0077ed]"
                             >
                                 + New Deployment
                             </button>
@@ -612,11 +608,11 @@ const DeploymentsPage = () => {
                     {/* Error state */}
                     {fetchError && (
                         <div className="flex flex-col items-center justify-center py-24 gap-3">
-                            <div className="w-12 h-12 rounded-xl bg-[#111] border border-[#1e1e1e] flex items-center justify-center text-xl">⚠️</div>
-                            <p className="text-[14px] text-[#555]">Failed to load projects</p>
+                            <div className="w-12 h-12 rounded-xl bg-[#f5f5f7] border border-[#e5e5e7] flex items-center justify-center text-xl">⚠️</div>
+                            <p className="text-[14px] text-[#6e6e73]">Failed to load projects</p>
                             <button
                                 onClick={() => window.location.reload()}
-                                className="text-sm text-[#555] hover:text-[#ccc] border border-[#222] px-3 py-1.5 rounded-lg transition-colors"
+                                className="text-sm text-[#1d1d1f] hover:bg-[#ececee] border border-[#e5e5e7] bg-[#f5f5f7] px-3.5 py-1.5 rounded-full transition-colors"
                             >
                                 Retry
                             </button>
@@ -626,14 +622,14 @@ const DeploymentsPage = () => {
                     {/* Empty state */}
                     {!loading && !fetchError && projects.length === 0 && (
                         <div className="flex flex-col items-center justify-center py-24 gap-4">
-                            <div className="w-14 h-14 rounded-2xl bg-[#111] border border-[#1e1e1e] flex items-center justify-center text-2xl">🚀</div>
+                            <div className="w-14 h-14 rounded-2xl bg-[#f5f5f7] border border-[#e5e5e7] flex items-center justify-center text-2xl">🚀</div>
                             <div className="text-center">
-                                <p className="text-[15px] font-medium text-[#ededed]">No deployments yet</p>
-                                <p className="text-[13px] text-[#555] mt-1">Deploy your first project to see it here</p>
+                                <p className="text-[15px] font-medium text-[#1d1d1f]">No deployments yet</p>
+                                <p className="text-[13px] text-[#6e6e73] mt-1">Deploy your first project to see it here</p>
                             </div>
                             <button
-                                onClick={() => navigate('/dashboard')}
-                                className="mt-2 px-4 py-2 rounded-lg border border-[#222] bg-[#111] text-sm text-[#ccc] cursor-pointer transition-all duration-150 hover:border-[#333]"
+                                onClick={() => navigate('/deploy-new-project')}
+                                className="mt-2 px-4 py-2 rounded-full bg-[#0071e3] text-white text-sm font-medium cursor-pointer transition-colors duration-150 hover:bg-[#0077ed]"
                             >
                                 Create first deployment
                             </button>
@@ -643,26 +639,26 @@ const DeploymentsPage = () => {
                     {/* Main split layout */}
                     {(loading || (!fetchError && projects.length > 0)) && (
                         <div
-                            className="flex-1 min-h-0 flex gap-4 rounded-xl border border-[#1e1e1e] overflow-hidden"
+                            className="flex-1 min-h-0 flex gap-4 rounded-2xl border border-[#e5e5e7] bg-white shadow-[0_1px_0_rgba(0,0,0,0.02)] overflow-hidden"
                             style={{ height: 'calc(100vh - 200px)' }}
                         >
                             {/* Left: project list */}
-                            <div className="w-[280px] flex-shrink-0 flex flex-col border-r border-[#1e1e1e] bg-[#0d0d0d]">
+                            <div className="w-[280px] flex-shrink-0 flex flex-col border-r border-[#e5e5e7] bg-[#fbfbfd]">
                                 {/* Search */}
-                                <div className="px-3 py-3 border-b border-[#1e1e1e] flex-shrink-0">
-                                    <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-[#1e1e1e] bg-[#0a0a0a] focus-within:border-[#2a2a2a] transition-colors">
+                                <div className="px-3 py-3 border-b border-[#e5e5e7] flex-shrink-0">
+                                    <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-[#e5e5e7] bg-[#f5f5f7] focus-within:border-[#0071e3] transition-colors">
                                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
-                                            <circle cx="11" cy="11" r="8" stroke="#444" strokeWidth="2" />
-                                            <path d="m21 21-4.35-4.35" stroke="#444" strokeWidth="2" strokeLinecap="round" />
+                                            <circle cx="11" cy="11" r="8" stroke="#86868b" strokeWidth="2" />
+                                            <path d="m21 21-4.35-4.35" stroke="#86868b" strokeWidth="2" strokeLinecap="round" />
                                         </svg>
                                         <input
-                                            className="flex-1 bg-transparent border-none outline-none text-[12px] text-[#ededed] placeholder-[#333]"
+                                            className="flex-1 bg-transparent border-none outline-none text-[12px] text-[#1d1d1f] placeholder-[#86868b]"
                                             placeholder="Filter projects…"
                                             value={search}
                                             onChange={e => setSearch(e.target.value)}
                                         />
                                         {search && (
-                                            <button onClick={() => setSearch('')} className="text-[#444] hover:text-[#666] transition-colors text-[10px]">✕</button>
+                                            <button onClick={() => setSearch('')} className="text-[#86868b] hover:text-[#1d1d1f] transition-colors text-[10px]">✕</button>
                                         )}
                                     </div>
                                 </div>
@@ -672,7 +668,7 @@ const DeploymentsPage = () => {
                                     {loading && (
                                         <div className="flex flex-col">
                                             {Array.from({ length: 5 }).map((_, i) => (
-                                                <div key={i} className="flex items-center gap-3 px-4 py-3.5 border-b border-[#1a1a1a]">
+                                                <div key={i} className="flex items-center gap-3 px-4 py-3.5 border-b border-[#e5e5e7]">
                                                     <div className="animate-shimmer w-8 h-8 rounded-lg flex-shrink-0" />
                                                     <div className="flex-1 flex flex-col gap-1.5">
                                                         <div className="animate-shimmer h-3 rounded" style={{ width: '55%' }} />
@@ -685,8 +681,8 @@ const DeploymentsPage = () => {
 
                                     {!loading && filteredProjects.length === 0 && search && (
                                         <div className="flex flex-col items-center justify-center py-12 gap-2 px-4 text-center">
-                                            <p className="text-[12px] text-[#444]">No projects match</p>
-                                            <p className="text-[11px] text-[#333]">"{search}"</p>
+                                            <p className="text-[12px] text-[#6e6e73]">No projects match</p>
+                                            <p className="text-[11px] text-[#86868b]">"{search}"</p>
                                         </div>
                                     )}
 
@@ -702,27 +698,27 @@ const DeploymentsPage = () => {
 
                                 {/* Footer */}
                                 {!loading && projects.length > 0 && (
-                                    <div className="px-4 py-2.5 border-t border-[#1e1e1e] flex-shrink-0">
-                                        <p className="text-[10px] text-[#333] font-mono">{projects.length} projects total</p>
+                                    <div className="px-4 py-2.5 border-t border-[#e5e5e7] flex-shrink-0">
+                                        <p className="text-[10px] text-[#86868b] font-mono">{projects.length} projects total</p>
                                     </div>
                                 )}
                             </div>
 
                             {/* Right: detail panel */}
-                            <div className="flex-1 min-w-0 flex flex-col bg-[#0a0a0a]">
+                            <div className="flex-1 min-w-0 flex flex-col bg-white">
                                 {selected ? (
                                     <DetailPanel key={selected._id} project={selected} onClose={handleClose} />
                                 ) : (
                                     <div className="flex-1 flex flex-col items-center justify-center gap-3 select-none text-center px-8">
-                                        <div className="w-14 h-14 rounded-2xl bg-[#0d0d0d] border border-[#1e1e1e] flex items-center justify-center">
+                                        <div className="w-14 h-14 rounded-2xl bg-[#f5f5f7] border border-[#e5e5e7] flex items-center justify-center">
                                             <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-                                                <rect x="3" y="3" width="18" height="18" rx="3" stroke="#333" strokeWidth="1.5" />
-                                                <path d="M7 8h10M7 12h7M7 16h5" stroke="#333" strokeWidth="1.5" strokeLinecap="round" />
+                                                <rect x="3" y="3" width="18" height="18" rx="3" stroke="#c7c7cc" strokeWidth="1.5" />
+                                                <path d="M7 8h10M7 12h7M7 16h5" stroke="#c7c7cc" strokeWidth="1.5" strokeLinecap="round" />
                                             </svg>
                                         </div>
                                         <div>
-                                            <p className="text-[14px] font-medium text-[#333]">Select a project</p>
-                                            <p className="text-[12px] text-[#2a2a2a] mt-1">Choose a project from the left to view its deployment logs and git commits</p>
+                                            <p className="text-[14px] font-medium text-[#6e6e73]">Select a project</p>
+                                            <p className="text-[12px] text-[#86868b] mt-1">Choose a project from the left to view its deployment logs and git commits</p>
                                         </div>
                                     </div>
                                 )}

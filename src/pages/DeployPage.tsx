@@ -219,7 +219,7 @@ export default function DeployPage() {
     setLogs([]);
     setInitLogs([]);
 
-    // ── Start init phase (file 2 animation) ──
+    // ── Start init phase ──
     setIsInitPhase(true);
     INIT_MESSAGES.forEach((msg, i) => {
       const t = setTimeout(() => {
@@ -307,8 +307,8 @@ export default function DeployPage() {
         .anim-fadeUp { animation: fadeUp 0.35s ease forwards; }
         .log-scroll::-webkit-scrollbar { width: 4px; }
         .log-scroll::-webkit-scrollbar-track { background: transparent; }
-        .log-scroll::-webkit-scrollbar-thumb { background: #222; border-radius: 2px; }
-        .log-scroll::-webkit-scrollbar-thumb:hover { background: #333; }
+        .log-scroll::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
+        .log-scroll::-webkit-scrollbar-thumb:hover { background: #444; }
         @keyframes blink {
           0%, 100% { opacity: 1; }
           50% { opacity: 0; }
@@ -318,6 +318,7 @@ export default function DeployPage() {
           to { transform: translateX(0); opacity: 1; }
         }
         .toast-enter { animation: slideIn 0.3s ease forwards; }
+        .segctl-btn { border: none; outline: none; }
       `}</style>
 
       <ConfettiCanvas active={showConfetti} />
@@ -325,20 +326,20 @@ export default function DeployPage() {
       {/* ── Toast ── */}
       {showEnvToast && (
         <div className="fixed top-20 right-6 z-[100] toast-enter">
-          <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-xl px-4 py-3 flex items-center gap-3 backdrop-blur-md shadow-lg">
-            <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center">
+          <div className="bg-white border border-[#e5e5e7] rounded-xl px-4 py-3 flex items-center gap-3 shadow-[0_8px_24px_rgba(0,0,0,0.08)]">
+            <div className="w-5 h-5 rounded-full bg-[#e8f9ee] flex items-center justify-center flex-shrink-0">
               <svg
                 width="12"
                 height="12"
                 viewBox="0 0 24 24"
                 fill="none"
-                stroke="#10b981"
+                stroke="#34c759"
                 strokeWidth="3"
               >
                 <path d="M5 13l4 4L19 7" />
               </svg>
             </div>
-            <span className="text-[13px] text-emerald-400 font-medium">
+            <span className="text-[13px] text-[#1d1d1f] font-medium">
               Environment variables saved
             </span>
           </div>
@@ -354,24 +355,25 @@ export default function DeployPage() {
       )}
 
       <div
-        className="min-h-screen bg-[#0a0a0a] text-[#ededed]"
+        className="min-h-screen bg-[#fbfbfd] text-[#1d1d1f]"
         style={{
-          fontFamily: "'Geist', -apple-system, BlinkMacSystemFont, sans-serif",
+          fontFamily:
+            "'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', system-ui, sans-serif",
         }}
       >
         {/* ── Topbar ── */}
-        <header className="h-14 border-b border-[#1f1f1f] flex items-center justify-between px-6 sticky top-0 z-50 bg-[rgba(10,10,10,0.85)] backdrop-blur-md">
+        <header className="h-14 border-b border-[#e5e5e7] flex items-center justify-between px-6 sticky top-0 z-50 bg-[rgba(251,251,253,0.8)] backdrop-blur-md">
           <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold text-black bg-gradient-to-br from-white to-[#888]">
-              <img src={logo} alt="logo" />
+            <div className="w-7 h-7 rounded-full flex items-center justify-center overflow-hidden">
+              <img src={logo} alt="logo" className="w-full h-full object-contain" />
             </div>
-            <span className="text-[15px] font-semibold tracking-tight text-[#ededed]">
-              cloudKit
+            <span onClick={() => navigate('/')} className="text-[15px] font-semibold tracking-tight text-[#1d1d1f] cursor-pointer">
+              Cloudkit
             </span>
           </div>
           <button
-            onClick={() => navigate('/dashboard')}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#222] bg-[#111] text-xs text-[#666] cursor-pointer transition-all duration-150 hover:border-[#333] hover:text-[#ccc]"
+            onClick={() => navigate('/deploy-new-project')}
+            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-[#e5e5e7] bg-[#f5f5f7] text-[13px] font-medium text-[#1d1d1f] cursor-pointer transition-all duration-150 hover:bg-[#ececee]"
           >
             ← Dashboard
           </button>
@@ -381,15 +383,15 @@ export default function DeployPage() {
         <main className="max-w-[900px] mx-auto px-6 pt-12 pb-16 anim-fadeUp">
           {/* Heading */}
           <div className="mb-10">
-            <div className="flex items-center gap-2 text-[#555] text-xs mb-3 tracking-wide uppercase">
+            <div className="flex items-center gap-2 text-[#86868b] text-[12px] mb-3 tracking-wide uppercase font-medium">
               <span>New Deployment</span>
               <span>·</span>
-              <span className="text-[#888] font-mono">{repoName}</span>
+              <span className="text-[#6e6e73] font-mono normal-case tracking-normal">{repoName}</span>
             </div>
-            <h1 className="text-[28px] font-semibold tracking-[-0.7px] text-[#ededed] leading-tight">
+            <h1 className="text-4xl md:text-5xl font-semibold tracking-[-0.03em] text-[#1d1d1f] leading-[1.15]">
               Deploy Project
             </h1>
-            <p className="text-sm text-[#555] mt-1.5">
+            <p className="text-lg text-[#6e6e73] mt-2">
               Hit Deploy to build and ship your project to the edge.
             </p>
           </div>
@@ -398,40 +400,40 @@ export default function DeployPage() {
           <div className="grid grid-cols-1 md:grid-cols-5 gap-5 mb-6">
             {/* ── LEFT: repo + subdomain + env ── */}
             <div className="md:col-span-3 flex flex-col gap-4">
-              <div className="bg-[#111] border border-[#1e1e1e] rounded-xl p-5">
+              <div className="bg-white border border-[#e5e5e7] rounded-2xl shadow-[0_1px_0_rgba(0,0,0,0.02)] p-5">
                 {/* Repository */}
-                <div className="text-[11px] uppercase tracking-[0.15em] text-[#444] mb-3">
+                <div className="text-[11px] uppercase tracking-[0.12em] text-[#86868b] font-semibold mb-3">
                   Repository
                 </div>
                 <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-lg bg-[#1a1a1a] border border-[#222] flex items-center justify-center flex-shrink-0">
+                  <div className="w-9 h-9 rounded-lg bg-[#f5f5f7] border border-[#e5e5e7] flex items-center justify-center flex-shrink-0">
                     <svg
                       width="18"
                       height="18"
                       viewBox="0 0 24 24"
                       fill="currentColor"
-                      className="text-[#777]"
+                      className="text-[#6e6e73]"
                     >
                       <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z" />
                     </svg>
                   </div>
                   <div className="min-w-0">
-                    <div className="text-[14px] font-semibold text-[#ededed] truncate">
+                    <div className="text-[14px] font-semibold text-[#1d1d1f] truncate">
                       {repoName}
                     </div>
-                    <div className="text-[11px] text-[#555] truncate mt-0.5 font-mono">
+                    <div className="text-[11px] text-[#86868b] truncate mt-0.5 font-mono">
                       {githubRepoURL}
                     </div>
                   </div>
                 </div>
 
                 {/* ── Subdomain ── */}
-                <div className="mt-5 pt-4 border-t border-[#1a1a1a]">
-                  <div className="text-[11px] uppercase tracking-[0.15em] text-[#444] mb-3">
+                <div className="mt-5 pt-4 border-t border-[#e5e5e7]">
+                  <div className="text-[11px] uppercase tracking-[0.12em] text-[#86868b] font-semibold mb-3">
                     Subdomain
                   </div>
 
-                  <div className="flex gap-1 bg-[#0d0d0d] rounded-lg p-1 w-fit mb-3">
+                  <div className="flex gap-1 bg-[#f5f5f7] border border-[#e5e5e7] rounded-lg p-1 w-fit mb-3">
                     {(['auto', 'custom'] as const).map((m) => (
                       <button
                         key={m}
@@ -441,14 +443,16 @@ export default function DeployPage() {
                           setCustomSlugError('');
                         }}
                         disabled={hasDeployed}
-                        className="px-3.5 py-1 rounded-md text-[12px] font-medium transition-all duration-150 capitalize"
+                        className="segctl-btn px-3.5 py-1 rounded-md text-[12px] font-medium transition-all duration-150 capitalize"
                         style={{
                           background:
-                            subdomainMode === m ? '#ededed' : 'transparent',
-                          color: subdomainMode === m ? '#0a0a0a' : '#555',
+                            subdomainMode === m ? '#ffffff' : 'transparent',
+                          color: subdomainMode === m ? '#1d1d1f' : '#86868b',
+                          boxShadow:
+                            subdomainMode === m
+                              ? '0 1px 2px rgba(0,0,0,0.08)'
+                              : 'none',
                           cursor: hasDeployed ? 'not-allowed' : 'pointer',
-                          border: 'none',
-                          outline: 'none',
                         }}
                       >
                         {m}
@@ -457,23 +461,22 @@ export default function DeployPage() {
                   </div>
 
                   {subdomainMode === 'auto' ? (
-                    <div className="flex items-center bg-[#0d0d0d] border border-[#1e1e1e] rounded-lg overflow-hidden">
-                      <span className="text-[13px] font-mono text-[#555] px-3 py-2 italic">
+                    <div className="flex items-center bg-[#f5f5f7] border border-[#e5e5e7] rounded-lg overflow-hidden">
+                      <span className="text-[13px] font-mono text-[#86868b] px-3 py-2 italic">
                         auto-generated
                       </span>
-                      <span className="text-[13px] text-[#3a3a3a] py-2 pr-3">
+                      <span className="text-[13px] text-[#b0b0b5] py-2 pr-3">
                         .cloudkit.page
                       </span>
                     </div>
                   ) : (
                     <div className="flex flex-col gap-1.5">
                       <div
-                        className="flex items-center rounded-lg overflow-hidden transition-all duration-150"
+                        className="flex items-center rounded-lg overflow-hidden transition-all duration-150 bg-[#f5f5f7]"
                         style={{
                           border: customSlugError
-                            ? '1px solid #e24b4a'
-                            : '1px solid #333',
-                          background: '#0d0d0d',
+                            ? '1px solid #ff3b30'
+                            : '1px solid #e5e5e7',
                         }}
                       >
                         <input
@@ -483,18 +486,18 @@ export default function DeployPage() {
                           disabled={hasDeployed}
                           placeholder="my-awesome-project"
                           autoFocus
-                          className="flex-1 bg-transparent text-[13px] font-mono text-[#ededed] outline-none px-3 py-2 placeholder:text-[#2e2e2e]"
+                          className="flex-1 bg-transparent text-[13px] font-mono text-[#1d1d1f] outline-none px-3 py-2 placeholder-[#b0b0b5]"
                           style={{
                             cursor: hasDeployed ? 'not-allowed' : 'text',
                           }}
                         />
-                        <span className="text-[13px] text-[#555] py-2 pr-3 pl-0 whitespace-nowrap flex-shrink-0">
+                        <span className="text-[13px] text-[#86868b] py-2 pr-3 pl-0 whitespace-nowrap flex-shrink-0">
                           .cloudkit.page
                         </span>
                       </div>
 
                       {customSlugError ? (
-                        <span className="text-[11px] text-[#e24b4a] pl-1 flex items-center gap-1">
+                        <span className="text-[11px] text-[#ff3b30] pl-1 flex items-center gap-1">
                           <svg
                             width="10"
                             height="10"
@@ -506,7 +509,7 @@ export default function DeployPage() {
                           {customSlugError}
                         </span>
                       ) : customSlug ? (
-                        <span className="text-[11px] text-emerald-600 pl-1 flex items-center gap-1 font-mono">
+                        <span className="text-[11px] text-[#1a9e4c] pl-1 flex items-center gap-1 font-mono">
                           <svg
                             width="10"
                             height="10"
@@ -518,7 +521,7 @@ export default function DeployPage() {
                           {customSlug}.cloudkit.page
                         </span>
                       ) : (
-                        <span className="text-[11px] text-[#444] pl-1">
+                        <span className="text-[11px] text-[#86868b] pl-1">
                           Only lowercase letters, numbers, and hyphens allowed.
                         </span>
                       )}
@@ -527,15 +530,15 @@ export default function DeployPage() {
                 </div>
 
                 {/* ── Environment Variables ── */}
-                <div className="mt-5 pt-4 border-t border-[#1a1a1a]">
+                <div className="mt-5 pt-4 border-t border-[#e5e5e7]">
                   <div className="flex items-center justify-between mb-3">
-                    <div className="text-[11px] uppercase tracking-[0.15em] text-[#444]">
+                    <div className="text-[11px] uppercase tracking-[0.12em] text-[#86868b] font-semibold">
                       Environment Variables
                     </div>
                     <button
                       onClick={() => setShowEnvSection(!showEnvSection)}
                       disabled={hasDeployed}
-                      className="text-[11px] text-[#666] hover:text-[#999] transition-colors duration-150 flex items-center gap-1"
+                      className="text-[11px] text-[#0071e3] hover:text-[#0077ed] transition-colors duration-150 flex items-center gap-1 font-medium"
                       style={{
                         cursor: hasDeployed ? 'not-allowed' : 'pointer',
                       }}
@@ -563,7 +566,7 @@ export default function DeployPage() {
                   {showEnvSection && (
                     <div className="space-y-3">
                       {/* ── Mode toggle: Form / Raw ── */}
-                      <div className="flex gap-1 bg-[#0d0d0d] rounded-lg p-1 w-fit">
+                      <div className="flex gap-1 bg-[#f5f5f7] border border-[#e5e5e7] rounded-lg p-1 w-fit">
                         {(['form', 'raw'] as const).map((m) => (
                           <button
                             key={m}
@@ -573,14 +576,16 @@ export default function DeployPage() {
                               setRawEnvError('');
                             }}
                             disabled={hasDeployed}
-                            className="px-3 py-1 rounded-md text-[11px] font-medium transition-all duration-150 capitalize"
+                            className="segctl-btn px-3 py-1 rounded-md text-[11px] font-medium transition-all duration-150 capitalize"
                             style={{
                               background:
-                                envInputMode === m ? '#222' : 'transparent',
-                              color: envInputMode === m ? '#ccc' : '#555',
+                                envInputMode === m ? '#ffffff' : 'transparent',
+                              color: envInputMode === m ? '#1d1d1f' : '#86868b',
+                              boxShadow:
+                                envInputMode === m
+                                  ? '0 1px 2px rgba(0,0,0,0.08)'
+                                  : 'none',
                               cursor: hasDeployed ? 'not-allowed' : 'pointer',
-                              border: 'none',
-                              outline: 'none',
                             }}
                           >
                             {m === 'form' ? '⊞ Form' : '{ } Raw .env'}
@@ -602,14 +607,14 @@ export default function DeployPage() {
                               '# Paste your .env file here\nDATABASE_URL=postgresql://...\nNEXT_PUBLIC_API_KEY=abc123\nSECRET_KEY="my secret value"'
                             }
                             rows={8}
-                            className="w-full bg-[#0d0d0d] border border-[#1e1e1e] rounded-lg px-3 py-2.5 text-[12px] font-mono text-[#ededed] outline-none focus:border-[#333] transition-colors placeholder:text-[#2a2a2a] resize-none"
+                            className="w-full bg-[#f5f5f7] border border-[#e5e5e7] rounded-lg px-3 py-2.5 text-[12px] font-mono text-[#1d1d1f] outline-none focus:border-[#0071e3] transition-colors placeholder-[#b0b0b5] resize-none"
                             style={{
                               cursor: hasDeployed ? 'not-allowed' : 'text',
                               lineHeight: '1.6',
                             }}
                           />
                           {rawEnvError && (
-                            <span className="text-[11px] text-[#e24b4a] pl-1 flex items-center gap-1">
+                            <span className="text-[11px] text-[#ff3b30] pl-1 flex items-center gap-1">
                               <svg
                                 width="10"
                                 height="10"
@@ -622,13 +627,13 @@ export default function DeployPage() {
                             </span>
                           )}
                           <div className="flex items-center justify-between">
-                            <span className="text-[10px] text-[#444] pl-1">
+                            <span className="text-[10px] text-[#86868b] pl-1">
                               Comments (#) and quoted values are supported
                             </span>
                             <button
                               onClick={applyRawEnv}
                               disabled={hasDeployed || !rawEnvText.trim()}
-                              className="px-3 py-1.5 rounded-lg bg-[#1a1a1a] border border-[#333] text-[11px] text-[#ccc] hover:border-[#444] hover:text-[#ededed] transition-all duration-150 disabled:opacity-40 disabled:cursor-not-allowed"
+                              className="px-3 py-1.5 rounded-lg bg-white border border-[#e5e5e7] text-[11px] text-[#1d1d1f] font-medium hover:border-[#c2c2c7] hover:bg-[#f5f5f7] transition-all duration-150 disabled:opacity-40 disabled:cursor-not-allowed"
                             >
                               Apply →
                             </button>
@@ -638,7 +643,7 @@ export default function DeployPage() {
                         /* ── Form mode ── */
                         <div className="space-y-2">
                           {envVars.length === 0 && (
-                            <p className="text-[11px] text-[#444] pl-1">
+                            <p className="text-[11px] text-[#86868b] pl-1">
                               No variables added yet. Use Raw mode to paste from
                               .env or add manually below.
                             </p>
@@ -653,7 +658,7 @@ export default function DeployPage() {
                                 }
                                 disabled={hasDeployed}
                                 placeholder="KEY"
-                                className="flex-1 bg-[#0d0d0d] border border-[#1e1e1e] rounded-lg px-3 py-2 text-[12px] font-mono text-[#ededed] outline-none focus:border-[#333] transition-colors placeholder:text-[#2e2e2e]"
+                                className="flex-1 bg-[#f5f5f7] border border-[#e5e5e7] rounded-lg px-3 py-2 text-[12px] font-mono text-[#1d1d1f] outline-none focus:border-[#0071e3] transition-colors placeholder-[#b0b0b5]"
                                 style={{
                                   cursor: hasDeployed ? 'not-allowed' : 'text',
                                 }}
@@ -666,7 +671,7 @@ export default function DeployPage() {
                                 }
                                 disabled={hasDeployed}
                                 placeholder="value"
-                                className="flex-1 bg-[#0d0d0d] border border-[#1e1e1e] rounded-lg px-3 py-2 text-[12px] font-mono text-[#ededed] outline-none focus:border-[#333] transition-colors placeholder:text-[#2e2e2e]"
+                                className="flex-1 bg-[#f5f5f7] border border-[#e5e5e7] rounded-lg px-3 py-2 text-[12px] font-mono text-[#1d1d1f] outline-none focus:border-[#0071e3] transition-colors placeholder-[#b0b0b5]"
                                 style={{
                                   cursor: hasDeployed ? 'not-allowed' : 'text',
                                 }}
@@ -674,7 +679,7 @@ export default function DeployPage() {
                               <button
                                 onClick={() => removeEnvVar(env.id)}
                                 disabled={hasDeployed}
-                                className="w-8 h-8 rounded-lg border border-[#1e1e1e] bg-[#0d0d0d] text-[#666] hover:text-[#e24b4a] hover:border-[#e24b4a]/30 transition-all duration-150 flex items-center justify-center flex-shrink-0"
+                                className="w-8 h-8 rounded-lg border border-[#e5e5e7] bg-[#f5f5f7] text-[#86868b] hover:text-[#ff3b30] hover:border-[#ff3b30]/30 transition-all duration-150 flex items-center justify-center flex-shrink-0"
                                 style={{
                                   cursor: hasDeployed
                                     ? 'not-allowed'
@@ -698,7 +703,7 @@ export default function DeployPage() {
                           <button
                             onClick={addEnvVar}
                             disabled={hasDeployed}
-                            className="w-full py-2 rounded-lg border border-dashed border-[#1e1e1e] bg-[#0d0d0d] text-[12px] text-[#666] hover:text-[#999] hover:border-[#333] transition-all duration-150 flex items-center justify-center gap-1.5"
+                            className="w-full py-2 rounded-lg border border-dashed border-[#d2d2d7] bg-[#f5f5f7] text-[12px] text-[#6e6e73] hover:text-[#1d1d1f] hover:border-[#b0b0b5] transition-all duration-150 flex items-center justify-center gap-1.5"
                             style={{
                               cursor: hasDeployed ? 'not-allowed' : 'pointer',
                             }}
@@ -718,7 +723,7 @@ export default function DeployPage() {
 
                           {envVars.length > 0 && (
                             <div className="flex items-center justify-between pt-2">
-                              <div className="text-[10px] text-[#444] pl-1">
+                              <div className="text-[10px] text-[#86868b] pl-1">
                                 {
                                   envVars.filter(
                                     (e) => e.key.trim() && e.value.trim(),
@@ -734,7 +739,7 @@ export default function DeployPage() {
                                     (e) => e.key.trim() && e.value.trim(),
                                   ).length === 0
                                 }
-                                className="px-3 py-1.5 rounded-lg bg-[#1a1a1a] border border-[#222] text-[11px] text-[#999] hover:border-[#333] hover:text-[#ccc] transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="px-3 py-1.5 rounded-lg bg-white border border-[#e5e5e7] text-[11px] text-[#1d1d1f] font-medium hover:border-[#c2c2c7] hover:bg-[#f5f5f7] transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
                               >
                                 Save
                               </button>
@@ -749,13 +754,13 @@ export default function DeployPage() {
 
               {/* Deploy URL card — only after success */}
               {status === 'success' && deployUrl && (
-                <div className="bg-[#111] border border-emerald-500/20 rounded-xl p-4 flex items-center gap-3">
-                  <span className="w-2 h-2 rounded-full bg-emerald-500 flex-shrink-0 animate-pulse" />
+                <div className="bg-white border border-[#34c759]/25 rounded-xl p-4 flex items-center gap-3 shadow-[0_1px_0_rgba(0,0,0,0.02)]">
+                  <span className="w-2 h-2 rounded-full bg-[#34c759] flex-shrink-0 animate-pulse" />
                   <a
                     href={deployUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex-1 text-[13px] font-mono text-[#60a5fa] truncate hover:text-[#93c5fd] transition-colors duration-150"
+                    className="flex-1 text-[13px] font-mono text-[#0071e3] truncate hover:text-[#0077ed] transition-colors duration-150"
                   >
                     {deployUrl}
                   </a>
@@ -763,7 +768,7 @@ export default function DeployPage() {
                     href={deployUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-[11px] px-2.5 py-1 rounded-lg border border-[#222] bg-[#1a1a1a] text-[#666] cursor-pointer transition-all duration-150 hover:border-[#333] hover:text-[#ccc] no-underline"
+                    className="text-[11px] px-2.5 py-1 rounded-full border border-[#e5e5e7] bg-[#f5f5f7] text-[#1d1d1f] font-medium cursor-pointer transition-all duration-150 hover:bg-[#ececee] no-underline"
                   >
                     Visit →
                   </a>
@@ -774,7 +779,7 @@ export default function DeployPage() {
             {/* ── RIGHT: canvas + deploy button ── */}
             <div className="md:col-span-2 flex flex-col gap-4">
               <div
-                className="bg-[#111] border border-[#1e1e1e] rounded-xl overflow-hidden flex flex-col"
+                className="bg-white border border-[#e5e5e7] rounded-2xl overflow-hidden flex flex-col shadow-[0_1px_0_rgba(0,0,0,0.02)]"
                 style={{ minHeight: 180 }}
               >
                 {status === 'success' && deployUrl ? (
@@ -789,7 +794,7 @@ export default function DeployPage() {
                     <DeployCanvas />
                     <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none select-none gap-1">
                       <StatusBadge status={status} />
-                      <div className="text-[11px] text-[#333] mt-1">
+                      <div className="text-[11px] text-[#86868b] mt-1">
                         {status === 'idle' && 'Awaiting deployment'}
                         {status === 'deploying' && 'Building your project…'}
                         {status === 'error' && 'Something went wrong'}
@@ -802,16 +807,16 @@ export default function DeployPage() {
               <button
                 onClick={handleDeploy}
                 disabled={hasDeployed}
-                className="px-3 py-3 rounded-md border border-[#2a2a2a] bg-white text-black text-base font-medium flex items-center justify-center gap-2 transition-all duration-150"
+                className="px-3 py-3 rounded-full bg-[#0071e3] text-white text-[15px] font-medium flex items-center justify-center gap-2 transition-all duration-150 hover:bg-[#0077ed] active:scale-[0.97]"
                 style={{
                   cursor: hasDeployed ? 'not-allowed' : 'pointer',
-                  opacity: hasDeployed ? 0.6 : 1,
+                  opacity: hasDeployed ? 0.5 : 1,
                 }}
               >
                 {hasDeployed ? (
                   status === 'deploying' ? (
                     <>
-                      <span className="w-3.5 h-3.5 border-2 border-[#555] border-t-[#888] rounded-full animate-spin inline-block" />
+                      <span className="w-3.5 h-3.5 border-2 border-white/40 border-t-white rounded-full animate-spin inline-block" />
                       Deploying…
                     </>
                   ) : status === 'success' ? (
@@ -829,7 +834,7 @@ export default function DeployPage() {
               {status === 'success' && !showModal && (
                 <button
                   onClick={() => setShowModal(true)}
-                  className="w-full py-2 rounded-xl border border-emerald-500/30 text-[12px] text-emerald-400 cursor-pointer transition-all duration-150 hover:bg-emerald-500/10"
+                  className="w-full py-2 rounded-xl border border-[#34c759]/30 bg-[#f0faf3] text-[12px] text-[#1a9e4c] font-medium cursor-pointer transition-all duration-150 hover:bg-[#e6f7ea]"
                 >
                   🎉 View deployment summary
                 </button>
@@ -838,21 +843,21 @@ export default function DeployPage() {
           </div>
 
           {/* ── Logs panel ── */}
-          <div className="bg-[#0d0d0d] border border-[#1e1e1e] rounded-xl overflow-hidden">
-            <div className="flex items-center justify-between px-5 py-3 border-b border-[#1a1a1a]">
+          <div className="bg-[#1d1d1f] border border-[#e5e5e7]/10 rounded-2xl overflow-hidden shadow-[0_1px_0_rgba(0,0,0,0.02)]">
+            <div className="flex items-center justify-between px-5 py-3 border-b border-white/[0.06]">
               <div className="flex items-center gap-2.5">
                 <div className="flex gap-1.5">
                   <span className="w-2.5 h-2.5 rounded-full bg-[#ff5f57]" />
                   <span className="w-2.5 h-2.5 rounded-full bg-[#febc2e]" />
                   <span className="w-2.5 h-2.5 rounded-full bg-[#28c840]" />
                 </div>
-                <span className="text-[11px] text-[#444] tracking-wide uppercase ml-1">
+                <span className="text-[11px] text-white/35 tracking-wide uppercase ml-1">
                   Build Logs
                 </span>
               </div>
               <div className="flex items-center gap-3">
                 {(logs.length > 0 || initLogs.length > 0) && (
-                  <span className="text-[10px] text-[#333] font-mono">
+                  <span className="text-[10px] text-white/25 font-mono">
                     {logs.length + initLogs.length} lines
                   </span>
                 )}
@@ -862,7 +867,7 @@ export default function DeployPage() {
 
             <div
               className="log-scroll overflow-y-auto px-5 py-4 font-mono"
-              style={{ height: 320, backgroundColor: '#080808' }}
+              style={{ height: 320, backgroundColor: '#151517' }}
             >
               {!hasDeployed ? (
                 <div className="h-full flex flex-col items-center justify-center gap-2 select-none">
@@ -871,7 +876,7 @@ export default function DeployPage() {
                     height="28"
                     viewBox="0 0 24 24"
                     fill="none"
-                    className="text-[#222]"
+                    className="text-white/15"
                   >
                     <rect
                       x="3"
@@ -889,7 +894,7 @@ export default function DeployPage() {
                       strokeLinecap="round"
                     />
                   </svg>
-                  <span className="text-[12px] text-[#333]">
+                  <span className="text-[12px] text-white/25">
                     Press Deploy Now to start
                   </span>
                 </div>
@@ -901,15 +906,15 @@ export default function DeployPage() {
                   <div ref={logsEndRef} />
                 </div>
               ) : (
-                // ── Init phase with dripping messages + blink cursor (file 2 animation) ──
+                // ── Init phase with dripping messages + blink cursor ──
                 <div className="flex flex-col gap-0.5">
                   {initLogs.map((line, i) => (
                     <LogLine key={i} line={line} isInit />
                   ))}
                   <div className="flex gap-2 mt-1">
-                    <span className="text-[#2a2a2a] text-[11px]">›</span>
+                    <span className="text-white/20 text-[11px]">›</span>
                     <span
-                      className="text-[12.5px] font-mono text-[#2a2a2a]"
+                      className="text-[12.5px] font-mono text-white/20"
                       style={{ animation: 'blink 1s step-end infinite' }}
                     >
                       ▌
@@ -921,13 +926,13 @@ export default function DeployPage() {
             </div>
 
             {logs.length > 0 && (
-              <div className="px-5 py-2.5 border-t border-[#111] flex items-center justify-between bg-[#0a0a0a]">
-                <span className="text-[10px] text-[#333] font-mono">
+              <div className="px-5 py-2.5 border-t border-white/[0.06] flex items-center justify-between bg-[#1a1a1c]">
+                <span className="text-[10px] text-white/25 font-mono">
                   {status === 'deploying' ? '● live stream' : '● ended'}
                 </span>
                 <button
                   onClick={() => setLogs([])}
-                  className="text-[10px] text-[#333] hover:text-[#666] transition-colors duration-100 cursor-pointer"
+                  className="text-[10px] text-white/25 hover:text-white/60 transition-colors duration-100 cursor-pointer"
                 >
                   Clear
                 </button>

@@ -26,25 +26,31 @@ export default function SuccessModal({ repoName, deployUrl, onClose }: Props) {
   };
 
   return (
-    <div className="fixed inset-0 z-10000 flex items-center justify-center bg-black/70 backdrop-blur">
-      <div className="bg-[#0f0f14] rounded-2xl p-8 w-full max-w-lg text-center border border-[#2a2a3a] shadow-xl">
-        <h2 className="text-2xl font-semibold mb-3 text-white">
+    <div className="fixed inset-0 z-10000 flex items-center justify-center bg-[#1d1d1f]/40 backdrop-blur-sm">
+      <div
+        className="bg-white rounded-2xl p-8 w-full max-w-lg text-center border border-[#e5e5e7] shadow-[0_20px_50px_rgba(0,0,0,0.12)]"
+        style={{
+          fontFamily:
+            "'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', system-ui, sans-serif",
+        }}
+      >
+        <h2 className="text-2xl font-semibold tracking-[-0.02em] mb-3 text-[#1d1d1f]">
           🚀 Your project is live!
         </h2>
 
-        <p className="text-base text-gray-300 mb-6">
-          <span className="font-mono text-lg">{repoName}</span> deployed
+        <p className="text-base text-[#6e6e73] mb-6">
+          <span className="font-mono text-lg text-[#1d1d1f]">{repoName}</span> deployed
           successfully.
         </p>
 
-        <div className="flex items-center gap-3 bg-black/40 p-3 rounded-lg mb-6">
-          <span className="flex-1 text-sm font-mono truncate text-white">
+        <div className="flex items-center gap-3 bg-[#f5f5f7] border border-[#e5e5e7] p-3 rounded-lg mb-6">
+          <span className="flex-1 text-sm font-mono truncate text-[#1d1d1f] text-left">
             {deployUrl}
           </span>
 
           <button
             onClick={handleCopy}
-            className="text-sm px-3 py-1 rounded bg-[#1a1a1a] border border-[#2a2a2a] text-gray-300 hover:bg-[#222]"
+            className="text-[13px] font-medium px-3 py-1.5 rounded-full bg-white border border-[#e5e5e7] text-[#1d1d1f] transition-all duration-150 hover:bg-[#ececee] hover:border-[#c2c2c7]"
           >
             {copied ? '✓ Copied' : 'Copy'}
           </button>
@@ -53,7 +59,7 @@ export default function SuccessModal({ repoName, deployUrl, onClose }: Props) {
         <div className="flex gap-3">
           <button
             onClick={onClose}
-            className="flex-1 py-3 rounded-lg bg-[#1a1a1a] text-white border border-[#2a2a2a] text-base"
+            className="flex-1 py-3 rounded-full bg-[#f5f5f7] text-[#1d1d1f] border border-[#e5e5e7] text-[15px] font-medium transition-all duration-150 hover:bg-[#ececee]"
           >
             Close
           </button>
@@ -61,7 +67,7 @@ export default function SuccessModal({ repoName, deployUrl, onClose }: Props) {
           <a
             href={deployUrl}
             target="_blank"
-            className="flex-1 py-3 rounded-lg text-center text-white text-base bg-gradient-to-r from-indigo-500 to-cyan-500"
+            className="flex-1 py-3 rounded-full text-center text-white text-[15px] font-medium bg-[#0071e3] transition-all duration-150 hover:bg-[#0077ed] active:scale-[0.97]"
           >
             Visit →
           </a>

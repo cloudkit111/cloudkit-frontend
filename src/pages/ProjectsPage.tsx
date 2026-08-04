@@ -1,12 +1,13 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import logo from '../assets/cloudkit-new.png';
 import axios from 'axios';
 import CloudKitLogo from '../assets/cloudkit-new.png';
 import Navbar from '@/components/navbar/Navbar';
 import { fetchUserDetails, handleLogout } from '@/services/userService';
 import useTitle from '@/hooks/useTitle';
+import { Server } from 'lucide-react'
+import useAuthStore from '@/store/auth-store';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -44,13 +45,13 @@ function repoInitials(name?: string): string {
     return name.slice(0, 2).toUpperCase();
 }
 
-function stringToHue(str?: string): number {
-    if (!str) return 220;
+function stringToHash(str?: string): number {
+    if (!str) return 0;
     let hash = 0;
     for (let i = 0; i < str.length; i++) {
         hash = str.charCodeAt(i) + ((hash << 5) - hash);
     }
-    return Math.abs(hash) % 360;
+    return Math.abs(hash);
 }
 
 function timeAgo(dateStr?: string): string {
@@ -67,136 +68,178 @@ function timeAgo(dateStr?: string): string {
     return `${mo}mo ago`;
 }
 
+// Purely presentational — derives a "live / pending" badge from data we
+// already have, without requiring any new API field.
+function deriveStatus(project: Project): 'live' | 'pending' {
+    return project?.project_url ? 'live' : 'pending';
+}
+
+function greetingForHour(): string {
+    const h = new Date().getHours();
+    if (h < 12) return 'Good morning';
+    if (h < 18) return 'Good afternoon';
+    return 'Good evening';
+}
+
+// Deterministic decorative sparkline path — purely visual, no data dependency.
+function sparklinePath(seed: string, width: number, height: number): string {
+    const n = stringToHash(seed);
+    const points = 8;
+    const step = width / (points - 1);
+    let d = '';
+    for (let i = 0; i < points; i++) {
+        const v = ((n >> (i * 3)) % 100) / 100;
+        const x = i * step;
+        const y = height - v * height * 0.8 - height * 0.1;
+        d += i === 0 ? `M${x},${y}` : ` L${x},${y}`;
+    }
+    return d;
+}
+
+// ── Palette ───────────────────────────────────────────────────────────────────
+// Matches the Apple system-color set already used across the app
+// (accent #0071e3 in the navbar CTA, #34c759 in the status dot, etc).
+
+const BRAND = '#0071e3';
+const LIVE_COLOR = '#34c759';
+const PENDING_COLOR = '#ff9500';
+
+const PALETTE = [
+    { tint: '#e8f2fe', ink: '#0071e3' },
+    { tint: '#f2e9fb', ink: '#af52de' },
+    { tint: '#e8f9ee', ink: '#248a3d' },
+    { tint: '#fef3e6', ink: '#ff9500' },
+    { tint: '#fde8ee', ink: '#ff375f' },
+    { tint: '#e6f7fc', ink: '#0a84ff' },
+];
+
+function paletteFor(name: string) {
+    return PALETTE[stringToHash(name) % PALETTE.length];
+}
+
 // ── Icons ─────────────────────────────────────────────────────────────────────
 
-function ExternalLinkIcon() {
+function IconCode({ className = '' }: { className?: string }) {
     return (
-        <svg width="11" height="11" viewBox="0 0 24 24" fill="none">
-            <path
-                d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14L21 3"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-            />
+        <svg viewBox="0 0 24 24" fill="none" className={className}>
+            <path d="M9 8 5 12l4 4M15 8l4 4-4 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
     );
 }
 
-function GridIcon() {
+function IconLayers({ className = '' }: { className?: string }) {
     return (
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-            <rect
-                x="3"
-                y="3"
-                width="7"
-                height="7"
-                rx="1"
-                stroke="currentColor"
-                strokeWidth="2"
-            />
-            <rect
-                x="14"
-                y="3"
-                width="7"
-                height="7"
-                rx="1"
-                stroke="currentColor"
-                strokeWidth="2"
-            />
-            <rect
-                x="3"
-                y="14"
-                width="7"
-                height="7"
-                rx="1"
-                stroke="currentColor"
-                strokeWidth="2"
-            />
-            <rect
-                x="14"
-                y="14"
-                width="7"
-                height="7"
-                rx="1"
-                stroke="currentColor"
-                strokeWidth="2"
-            />
+        <svg viewBox="0 0 24 24" fill="none" className={className}>
+            <path d="m12 3 8 4.5-8 4.5-8-4.5L12 3Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            <path d="m4 12 8 4.5 8-4.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            <path d="m4 16.5 8 4.5 8-4.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
     );
 }
 
-function ListIcon() {
+function IconGlobe({ className = '' }: { className?: string }) {
     return (
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-            <path
-                d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-            />
+        <svg viewBox="0 0 24 24" fill="none" className={className}>
+            <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2" />
+            <path d="M3 12h18M12 3c2.5 2.6 3.8 5.7 3.8 9s-1.3 6.4-3.8 9c-2.5-2.6-3.8-5.7-3.8-9s1.3-6.4 3.8-9Z" stroke="currentColor" strokeWidth="2" />
+        </svg>
+    );
+}
+
+function IconDatabase({ className = '' }: { className?: string }) {
+    return (
+        <svg viewBox="0 0 24 24" fill="none" className={className}>
+            <ellipse cx="12" cy="6" rx="7" ry="3" stroke="currentColor" strokeWidth="2" />
+            <path d="M5 6v6c0 1.7 3.1 3 7 3s7-1.3 7-3V6M5 12v6c0 1.7 3.1 3 7 3s7-1.3 7-3v-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+        </svg>
+    );
+}
+
+const ICON_SET = [IconCode, IconDatabase, IconLayers, IconGlobe];
+
+function iconFor(name: string) {
+    return ICON_SET[stringToHash(name) % ICON_SET.length];
+}
+
+function ExternalLinkIcon({ className = '' }: { className?: string }) {
+    return (
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" className={className}>
+            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14L21 3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+    );
+}
+
+function GridIcon({ className = '' }: { className?: string }) {
+    return (
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" className={className}>
+            <rect x="3" y="3" width="7" height="7" rx="1.5" stroke="currentColor" strokeWidth="2" />
+            <rect x="14" y="3" width="7" height="7" rx="1.5" stroke="currentColor" strokeWidth="2" />
+            <rect x="3" y="14" width="7" height="7" rx="1.5" stroke="currentColor" strokeWidth="2" />
+            <rect x="14" y="14" width="7" height="7" rx="1.5" stroke="currentColor" strokeWidth="2" />
+        </svg>
+    );
+}
+
+function ListIcon({ className = '' }: { className?: string }) {
+    return (
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" className={className}>
+            <path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
         </svg>
     );
 }
 
 function SearchIcon({ className = '' }: { className?: string }) {
     return (
-        <svg
-            width="14"
-            height="14"
-            viewBox="0 0 24 24"
-            fill="none"
-            className={className || 'text-[#555]'}
-        >
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" className={className}>
             <circle cx="11" cy="11" r="8" stroke="currentColor" strokeWidth="2" />
-            <path
-                d="m21 21-4.35-4.35"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-            />
+            <path d="m21 21-4.35-4.35" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
         </svg>
     );
 }
 
-function BranchIcon() {
+function DotsIcon({ className = '' }: { className?: string }) {
     return (
-        <svg width="10" height="10" viewBox="0 0 24 24" fill="none">
-            <path
-                d="M6 3v12M18 9a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM6 21a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM18 9c0 4-3.6 6-6 6H9"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-            />
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" className={className}>
+            <circle cx="12" cy="5" r="1.6" fill="currentColor" />
+            <circle cx="12" cy="12" r="1.6" fill="currentColor" />
+            <circle cx="12" cy="19" r="1.6" fill="currentColor" />
         </svg>
     );
 }
 
-// ── Monogram avatar ───────────────────────────────────────────────────────────
-
-interface MonogramProps {
-    name: string;
-    size?: number;
-    textSize?: number;
+function CloseIcon({ className = '' }: { className?: string }) {
+    return (
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" className={className}>
+            <path d="M6 6l12 12M18 6 6 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+        </svg>
+    );
 }
 
-function Monogram({ name, size = 32, textSize = 11 }: MonogramProps) {
-    const hue = stringToHue(name);
+// ── Status badge ──────────────────────────────────────────────────────────────
+
+function StatusBadge({ status }: { status: 'live' | 'pending' }) {
+    const isLive = status === 'live';
     return (
-        <div
-            className="rounded-lg flex items-center justify-center font-bold select-none flex-shrink-0"
-            style={{
-                width: size,
-                height: size,
-                fontSize: textSize,
-                background: `#1a1a1a`,
-                color: `#e5e5e5`,
-                border: `1px solid #2a2a2a`,
-            }}
-        >
-            {repoInitials(name)}
-        </div>
+        <span className="inline-flex items-center gap-1.5 text-[13px] font-medium text-muted-foreground">
+            <span
+                className="h-1.5 w-1.5 rounded-full"
+                style={{ backgroundColor: isLive ? LIVE_COLOR : PENDING_COLOR }}
+            />
+            {isLive ? 'Live' : 'Pending'}
+        </span>
+    );
+}
+
+// ── Sparkline ─────────────────────────────────────────────────────────────────
+
+function Sparkline({ seed, color }: { seed: string; color: string }) {
+    const w = 64;
+    const h = 24;
+    const d = sparklinePath(seed, w, h);
+    return (
+        <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} fill="none">
+            <path d={d} stroke={color} strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
     );
 }
 
@@ -211,69 +254,64 @@ function ProjectCard({ project, onClick }: ProjectCardProps) {
     const name = project?.repoName ?? project?.slug ?? 'Untitled';
     const hostname = safeHostname(project?.project_url);
     const ago = timeAgo(project?.updatedAt ?? project?.createdAt);
+    const status = deriveStatus(project);
+    const { tint, ink } = paletteFor(name);
+    const Icon = iconFor(name);
 
     return (
         <div
             onClick={onClick}
-            className="group bg-[#111] border border-[#1e1e1e] rounded-xl overflow-hidden cursor-pointer transition-all duration-200 hover:border-[#333] hover:bg-[#141414]"
-            style={{ boxShadow: 'none' }}
-            onMouseEnter={(e) =>
-                (e.currentTarget.style.boxShadow = '0 4px 24px rgba(0,0,0,0.45)')
-            }
-            onMouseLeave={(e) => (e.currentTarget.style.boxShadow = 'none')}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') onClick();
+            }}
+            className="group flex cursor-pointer flex-col rounded-2xl border border-border bg-card p-5 text-left shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_12px_28px_rgba(0,0,0,0.08)] focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
         >
-            {/* Domain pill preview area */}
-            <div className="relative w-full h-[120px] flex flex-col items-center justify-center gap-3 bg-[#0d0d0d] border-b border-[#1e1e1e]">
-                {/* Subtle grid pattern */}
-                <div
-                    className="absolute inset-0 opacity-[0.03]"
-                    style={{
-                        backgroundImage:
-                            'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)',
-                        backgroundSize: '28px 28px',
-                    }}
-                />
-                <div className="relative z-10 flex flex-col items-center gap-2">
-                    <div className="w-9 h-9 rounded-full bg-[#1a1a1a] border border-[#2a2a2a] flex items-center justify-center text-white">
-                        <img src={CloudKitLogo} />
+            <div className="flex items-start justify-between">
+                <div className="flex items-center gap-3">
+                    <div
+                        className="flex h-10 w-10 items-center justify-center rounded-xl"
+                        style={{ backgroundColor: tint, color: ink }}
+                    >
+                        <Server className="h-5 w-5" />
                     </div>
-                    {hostname ? (
-                        <span className="text-base font-mono text-[#555] truncate max-w-[180px] px-2">
-                            {hostname}
-                        </span>
-                    ) : (
-                        <span className="text-base text-[#333]">No URL configured</span>
-                    )}
+                    <div className="min-w-0">
+                        <div className="truncate text-[15px] font-semibold leading-tight text-foreground">
+                            {name}
+                        </div>
+                        <div className="mt-1">
+                            <StatusBadge status={status} />
+                        </div>
+                    </div>
                 </div>
+
+                <button
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        onClick();
+                    }}
+                    className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full text-muted-foreground transition-colors duration-150 hover:bg-muted hover:text-foreground"
+                    aria-label="Project options"
+                >
+                    <DotsIcon />
+                </button>
             </div>
 
-            {/* Card footer */}
-            <div className="px-4 py-3 flex items-center justify-between gap-3">
-                <div className="flex items-center gap-2.5 min-w-0 flex-1">
-                    <Monogram name={name} size={28} textSize={10} />
-                    <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-1.5 mb-0.5">
-                            <span className="text-base font-medium text-[#ededed] truncate">
-                                {name}
-                            </span>
-                        </div>
-                        {ago && <span className="text-base text-[#555]">{ago}</span>}
-                    </div>
-                </div>
+            <div className="my-4 h-px bg-border" />
 
-                {/* External link */}
-                {project?.project_url && (
-                    <a
-                        href={project.project_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        onClick={(e) => e.stopPropagation()}
-                        className="flex-shrink-0 w-7 h-7 rounded-lg border border-[#222] bg-[#1a1a1a] flex items-center justify-center text-[#555] transition-all duration-150 hover:border-[#444] hover:text-[#ccc] hover:bg-[#222]"
-                        title="Open in new tab"
-                    >
-                        <ExternalLinkIcon />
-                    </a>
-                )}
+            {hostname ? (
+                <span className="truncate text-[13px] font-medium" style={{ color: BRAND }}>
+                    {hostname}
+                </span>
+            ) : (
+                <span className="text-[13px] text-muted-foreground">No URL configured</span>
+            )}
+
+            <div className="mt-3 flex items-end justify-between">
+                <span className="text-[13px] text-muted-foreground">
+                    {ago ? `Deployed ${ago}` : 'Deployed'}
+                </span>
             </div>
         </div>
     );
@@ -285,61 +323,78 @@ function ProjectRow({ project, onClick }: ProjectCardProps) {
     const name = project?.repoName ?? project?.slug ?? 'Untitled';
     const hostname = safeHostname(project?.project_url);
     const ago = timeAgo(project?.updatedAt ?? project?.createdAt);
+    const status = deriveStatus(project);
+    const { tint, ink } = paletteFor(name);
+    const Icon = iconFor(name);
 
     return (
         <div
             onClick={onClick}
-            className="flex items-center justify-between px-4 py-3 cursor-pointer transition-all duration-150 hover:bg-[#111] group"
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') onClick();
+            }}
+            className="group flex cursor-pointer items-center justify-between gap-4 px-5 py-4 transition-colors duration-150 hover:bg-muted focus:outline-none"
         >
-            <div className="flex items-center gap-3 min-w-0 flex-1">
-                <Monogram name={name} size={32} textSize={11} />
+            <div className="flex min-w-0 flex-1 items-center gap-3">
+                <div
+                    className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl"
+                    style={{ backgroundColor: tint, color: ink }}
+                >
+                    <Icon className="h-4 w-4" />
+                </div>
                 <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2 mb-0.5">
-                        <span className="text-base font-medium text-[#ededed] truncate">
+                    <div className="flex items-center gap-2">
+                        <span className="truncate text-[14px] font-semibold text-foreground">
                             {name}
                         </span>
                     </div>
-                    <div className="flex items-center gap-2 text-base font-mono text-[#555]">
-                        {hostname && <span className="truncate">{hostname}</span>}
+                    <div className="mt-0.5 flex items-center gap-2 text-[13px]">
+                        {hostname && (
+                            <span className="truncate font-medium" style={{ color: BRAND }}>
+                                {hostname}
+                            </span>
+                        )}
                         {project?.slug && (
                             <>
-                                <span className="text-[#2a2a2a]">·</span>
-                                <span className="flex items-center gap-1 text-white">
-                                    <BranchIcon />
-                                    {project.slug}
-                                </span>
+                                <span className="text-border">·</span>
+                                <span className="truncate text-muted-foreground">{project.slug}</span>
                             </>
                         )}
                     </div>
                 </div>
             </div>
 
-            {/* Timestamp + actions */}
-            <div className="flex items-center gap-3 flex-shrink-0">
-                {ago && (
-                    <span className="text-base text-white hidden sm:block">{ago}</span>
-                )}
+            <div className="hidden sm:block">
+                <StatusBadge status={status} />
+            </div>
+
+            <span className="hidden w-24 flex-shrink-0 text-right text-[13px] text-muted-foreground md:block">
+                {ago}
+            </span>
+
+            <div className="flex flex-shrink-0 items-center gap-2">
                 {project?.project_url && (
-                    <a
-                        href={project.project_url}
+                    <Link
+                        to={project.project_url}
                         target="_blank"
                         rel="noopener noreferrer"
                         onClick={(e) => e.stopPropagation()}
-                        className="w-7 h-7 rounded-lg border border-[#222] bg-[#1a1a1a] flex items-center justify-center text-[#555] transition-all duration-150 hover:border-[#444] hover:text-[#ccc] hover:bg-[#222] opacity-0 group-hover:opacity-100"
+                        className="flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground opacity-0 transition-all duration-150 hover:bg-background hover:text-foreground group-hover:opacity-100"
                         title="Open in new tab"
                     >
                         <ExternalLinkIcon />
-                    </a>
+                    </Link>
                 )}
                 <button
                     onClick={(e) => {
                         e.stopPropagation();
-                        if (project?.project_url)
-                            window.open(project.project_url, '_blank');
+                        onClick();
                     }}
-                    className="px-3 py-1 rounded-md border border-[#2a2a2a] bg-white text-black text-base font-medium cursor-pointer transition-all duration-150 hover:bg-[#e5e5e5]"
+                    className="rounded-full border border-border bg-card px-3.5 py-1.5 text-[13px] font-medium text-foreground transition-colors duration-150 hover:bg-background"
                 >
-                    Visit
+                    View
                 </button>
             </div>
         </div>
@@ -358,7 +413,9 @@ function ProjectModal({ project, onClose }: ProjectModalProps) {
     const name = project?.repoName ?? project?.slug ?? 'Untitled';
     const hostname = safeHostname(project?.project_url);
     const ago = timeAgo(project?.updatedAt ?? project?.createdAt);
-    const hue = stringToHue(name);
+    const status = deriveStatus(project);
+    const { tint, ink } = paletteFor(name);
+    const Icon = iconFor(name);
 
     const handleCopy = () => {
         navigator.clipboard
@@ -384,107 +441,88 @@ function ProjectModal({ project, onClose }: ProjectModalProps) {
 
     return (
         <div
-            className="fixed inset-0 flex items-center justify-center"
-            style={{
-                zIndex: 9998,
-                backgroundColor: 'rgba(0,0,0,0.78)',
-                backdropFilter: 'blur(8px)',
-            }}
+            className="fixed inset-0 z-[9998] flex items-center justify-center bg-black/40 backdrop-blur-sm"
             onClick={handleBackdrop}
         >
-            <style>{`
-        @keyframes modalSlideUp {
-          from { opacity: 0; transform: translateY(16px) scale(0.97); }
-          to   { opacity: 1; transform: translateY(0) scale(1); }
-        }
-        .modal-slide { animation: modalSlideUp 0.2s ease forwards; }
-      `}</style>
-
-            <div className="modal-slide bg-[#0f0f0f] border border-[#222] rounded-2xl w-full max-w-[560px] mx-4 overflow-hidden">
-                {/* Accent bar */}
-                <div
-                    className="h-[2px] w-full"
-                    style={{
-                        background: 'linear-gradient(90deg, #ffffff, #444444)',
-                    }}
-                />
-
+            <div className="animate-[modalIn_0.18s_ease-out_forwards] mx-4 w-full max-w-[520px] overflow-hidden rounded-2xl border border-border bg-card shadow-[0_24px_60px_rgba(0,0,0,0.18)]">
                 {/* Header */}
-                <div className="flex items-center justify-between px-5 py-4 border-b border-[#1a1a1a]">
+                <div className="flex items-center justify-between border-b border-border px-6 py-5">
                     <div className="flex items-center gap-3">
-                        <Monogram name={name} size={32} textSize={11} />
+                        <div
+                            className="flex h-11 w-11 items-center justify-center rounded-xl"
+                            style={{ backgroundColor: tint, color: ink }}
+                        >
+                            <Icon className="h-5 w-5" />
+                        </div>
                         <div>
-                            <div className="text-[14px] font-semibold text-[#ededed]">
-                                {name}
+                            <div className="text-[16px] font-semibold text-foreground">{name}</div>
+                            <div className="mt-0.5">
+                                <StatusBadge status={status} />
                             </div>
-                            {project?.slug && (
-                                <div className="text-base text-[#555] font-mono">
-                                    {project.slug}
-                                </div>
-                            )}
                         </div>
                     </div>
                     <button
                         onClick={onClose}
-                        className="w-7 h-7 rounded-lg border border-[#222] bg-[#1a1a1a] flex items-center justify-center text-[#555] cursor-pointer transition-all duration-150 hover:border-[#333] hover:text-[#ccc] text-base"
+                        className="flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground transition-colors duration-150 hover:bg-muted hover:text-foreground"
                         aria-label="Close"
                     >
-                        ✕
+                        <CloseIcon />
                     </button>
                 </div>
 
                 {/* Details */}
-                <div className="px-5 py-5 flex flex-col gap-4">
-                    {/* URL row */}
+                <div className="flex flex-col gap-3 px-6 py-5">
                     {project?.project_url && (
-                        <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-[#0d0d0d] border border-[#1e1e1e]">
-                            <span className="w-1.5 h-1.5 rounded-full bg-white flex-shrink-0 animate-pulse" />
-                            <span className="flex-1 text-base font-mono text-white truncate">
+                        <div className="flex items-center gap-3 rounded-xl border border-border bg-muted px-4 py-3">
+                            <span
+                                className="h-1.5 w-1.5 flex-shrink-0 rounded-full"
+                                style={{ backgroundColor: LIVE_COLOR }}
+                            />
+                            <span className="flex-1 truncate text-[13px] font-medium text-foreground">
                                 {project.project_url}
                             </span>
                             <button
                                 onClick={handleCopy}
-                                className="text-base px-2.5 py-1 rounded-lg border border-[#222] bg-[#1a1a1a] text-[#666] cursor-pointer transition-all duration-150 hover:border-[#333] hover:text-[#ccc] flex-shrink-0"
+                                className="flex-shrink-0 rounded-full border border-border bg-card px-3 py-1 text-[12px] font-medium text-foreground transition-colors duration-150 hover:bg-background"
                             >
-                                {copied ? '✓ Copied' : 'Copy'}
+                                {copied ? 'Copied' : 'Copy'}
                             </button>
                         </div>
                     )}
 
-                    {/* Meta grid */}
                     <div className="grid grid-cols-2 gap-3">
-                        <div className="px-3 py-2.5 rounded-xl bg-[#0d0d0d] border border-[#1e1e1e]">
-                            <div className="text-[10px] text-white uppercase tracking-wider mb-1">
+                        <div className="rounded-xl border border-border bg-muted px-4 py-3">
+                            <div className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
                                 Domain
                             </div>
-                            <div className="text-base font-mono text-white truncate">
+                            <div className="mt-1 truncate text-[13px] font-medium text-foreground">
                                 {hostname || '—'}
                             </div>
                         </div>
-                        <div className="px-3 py-2.5 rounded-xl bg-[#0d0d0d] border border-[#1e1e1e]">
-                            <div className="text-[10px] text-white uppercase tracking-wider mb-1">
-                                Sub domain
+                        <div className="rounded-xl border border-border bg-muted px-4 py-3">
+                            <div className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+                                Subdomain
                             </div>
-                            <div className="text-base font-mono text-white truncate">
+                            <div className="mt-1 truncate text-[13px] font-medium text-foreground">
                                 {project?.slug || 'main'}
                             </div>
                         </div>
                         {ago && (
-                            <div className="px-3 py-2.5 rounded-xl bg-[#0d0d0d] border border-[#1e1e1e]">
-                                <div className="text-[10px] text-white uppercase tracking-wider mb-1">
-                                    Last Deployed
+                            <div className="col-span-2 rounded-xl border border-border bg-muted px-4 py-3">
+                                <div className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+                                    Last deployed
                                 </div>
-                                <div className="text-base text-white">{ago}</div>
+                                <div className="mt-1 text-[13px] font-medium text-foreground">{ago}</div>
                             </div>
                         )}
                     </div>
                 </div>
 
-                {/* Footer actions */}
-                <div className="px-5 py-4 border-t border-[#1a1a1a] flex items-center justify-end gap-2">
+                {/* Footer */}
+                <div className="flex items-center justify-end gap-2 border-t border-border px-6 py-4">
                     <button
                         onClick={onClose}
-                        className="px-4 py-1.5 rounded-lg border border-[#222] bg-[#1a1a1a] text-base text-[#666] cursor-pointer transition-all duration-150 hover:border-[#333] hover:text-[#ccc]"
+                        className="rounded-full border border-border bg-card px-4 py-2 text-[13px] font-medium text-foreground transition-colors duration-150 hover:bg-background"
                     >
                         Close
                     </button>
@@ -493,12 +531,9 @@ function ProjectModal({ project, onClose }: ProjectModalProps) {
                             to={project.project_url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="px-4 py-1.5 rounded-lg text-white text-base font-medium no-underline transition-all duration-150 hover:opacity-90"
-                            style={{
-                                background: `black`,
-                            }}
+                            className="rounded-full bg-primary px-4 py-2 text-[13px] font-medium text-primary-foreground transition-opacity duration-150 hover:opacity-90"
                         >
-                            Visit Site
+                            Visit site
                         </Link>
                     )}
                 </div>
@@ -511,26 +546,19 @@ function ProjectModal({ project, onClose }: ProjectModalProps) {
 
 function SkeletonGrid() {
     return (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {Array.from({ length: 6 }).map((_, i) => (
-                <div
-                    key={i}
-                    className="bg-[#111] border border-[#1e1e1e] rounded-xl overflow-hidden"
-                >
-                    <div className="animate-shimmer w-full h-[120px]" />
-                    <div className="px-4 py-3 flex items-center gap-2.5">
-                        <div className="animate-shimmer w-7 h-7 rounded-lg flex-shrink-0" />
-                        <div className="flex-1 flex flex-col gap-1.5">
-                            <div
-                                className="animate-shimmer h-3 rounded"
-                                style={{ width: '55%' }}
-                            />
-                            <div
-                                className="animate-shimmer h-2.5 rounded"
-                                style={{ width: '35%' }}
-                            />
+                <div key={i} className="rounded-2xl border border-border bg-card p-5">
+                    <div className="flex items-center gap-3">
+                        <div className="h-10 w-10 flex-shrink-0 rounded-xl bg-muted animate-pulse" />
+                        <div className="flex-1 space-y-2">
+                            <div className="h-3 w-2/3 rounded bg-muted animate-pulse" />
+                            <div className="h-2.5 w-1/3 rounded bg-muted animate-pulse" />
                         </div>
                     </div>
+                    <div className="my-4 h-px bg-border" />
+                    <div className="h-2.5 w-1/2 rounded bg-muted animate-pulse" />
+                    <div className="mt-3 h-2.5 w-1/3 rounded bg-muted animate-pulse" />
                 </div>
             ))}
         </div>
@@ -539,24 +567,18 @@ function SkeletonGrid() {
 
 function SkeletonList() {
     return (
-        <div className="border border-[#1e1e1e] rounded-xl overflow-hidden">
+        <div className="overflow-hidden rounded-2xl border border-border bg-card">
             {Array.from({ length: 5 }).map((_, i) => (
                 <div
                     key={i}
-                    className="flex items-center gap-3 px-4 py-3 border-b border-[#1a1a1a] last:border-b-0"
+                    className="flex items-center gap-3 border-b border-border px-5 py-4 last:border-b-0"
                 >
-                    <div className="animate-shimmer w-8 h-8 rounded-lg flex-shrink-0" />
-                    <div className="flex-1 flex flex-col gap-1.5">
-                        <div
-                            className="animate-shimmer h-3 rounded"
-                            style={{ width: '40%' }}
-                        />
-                        <div
-                            className="animate-shimmer h-2.5 rounded"
-                            style={{ width: '28%' }}
-                        />
+                    <div className="h-9 w-9 flex-shrink-0 rounded-xl bg-muted animate-pulse" />
+                    <div className="flex-1 space-y-2">
+                        <div className="h-3 w-1/3 rounded bg-muted animate-pulse" />
+                        <div className="h-2.5 w-1/4 rounded bg-muted animate-pulse" />
                     </div>
-                    <div className="animate-shimmer w-14 h-6 rounded-md" />
+                    <div className="h-6 w-16 rounded-full bg-muted animate-pulse" />
                 </div>
             ))}
         </div>
@@ -567,51 +589,42 @@ function SkeletonList() {
 
 function EmptyDeployments({ onNavigate }: { onNavigate: () => void }) {
     return (
-        <div className="flex flex-col items-center justify-center py-28 gap-4 select-none">
-            <div className="w-14 h-14 rounded-2xl bg-[#111] border border-[#1e1e1e] flex items-center justify-center text-2xl">
-                <img src={CloudKitLogo} />
+        <div className="flex flex-col items-center justify-center gap-4 rounded-2xl border border-dashed border-border py-28">
+            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-muted">
+                <img src={CloudKitLogo} className="h-7 w-7" alt="" />
             </div>
             <div className="text-center">
-                <div className="text-[15px] font-medium text-white">
-                    No deployments yet
-                </div>
-                <div className="text-base text-white mt-1">
-                    Deploy your first project from the dashboard
+                <div className="text-[15px] font-semibold text-foreground">No deployments yet</div>
+                <div className="mt-1 text-[13px] text-muted-foreground">
+                    Deploy your first project to see it here
                 </div>
             </div>
             <button
                 onClick={onNavigate}
-                className="mt-2 px-4 py-2 rounded-lg border border-[#222] bg-[#111] text-base text-white cursor-pointer transition-all duration-150 hover:border-[#333] hover:text-[#ccc]"
+                className="mt-1 rounded-full bg-primary px-5 py-2.5 text-[13px] font-medium text-primary-foreground transition-opacity duration-150 hover:opacity-90"
             >
-                Create your First Project
+                Create your first project
             </button>
         </div>
     );
 }
 
-function EmptySearch({
-    search,
-    onClear,
-}: {
-    search: string;
-    onClear: () => void;
-}) {
+function EmptySearch({ search, onClear }: { search: string; onClear: () => void }) {
     return (
-        <div className="flex flex-col items-center justify-center py-24 gap-3 select-none">
-            <div className="w-12 h-12 rounded-xl bg-[#111] border border-[#1e1e1e] flex items-center justify-center text-[#555]">
+        <div className="flex flex-col items-center justify-center gap-3 py-24">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-muted text-muted-foreground">
                 <SearchIcon />
             </div>
             <div className="text-center">
-                <div className="text-[14px] font-medium text-[#555]">
-                    No results found
-                </div>
-                <div className="text-base text-[#333] mt-1">
-                    No projects match <span className="text-[#666]">"{search}"</span>
+                <div className="text-[14px] font-semibold text-foreground">No results found</div>
+                <div className="mt-1 text-[13px] text-muted-foreground">
+                    No projects match &ldquo;{search}&rdquo;
                 </div>
             </div>
             <button
                 onClick={onClear}
-                className="text-base text-[#555] hover:text-[#ccc] transition-colors"
+                className="text-[13px] font-medium transition-opacity hover:opacity-70"
+                style={{ color: BRAND }}
             >
                 Clear search
             </button>
@@ -626,7 +639,8 @@ const PAGE_SIZE = 6;
 // ── ProjectsPage ──────────────────────────────────────────────────────────────
 
 export default function ProjectsPage() {
-    useTitle('Deployed apps')
+    useTitle('Cloudkit');
+    const accessToken = useAuthStore((state) => state.accessToken);
     const [projects, setProjects] = useState<Project[]>([]);
     const [loading, setLoading] = useState(true);
     const [selected, setSelected] = useState<Project | null>(null);
@@ -638,6 +652,7 @@ export default function ProjectsPage() {
     const navigate = useNavigate();
 
     useEffect(() => {
+        console.log(accessToken)
         const loadUser = async () => {
             try {
                 const res = await fetchUserDetails();
@@ -675,98 +690,87 @@ export default function ProjectsPage() {
     });
 
     const totalPages = Math.ceil(filteredProjects.length / PAGE_SIZE);
-    const visibleProjects = filteredProjects.slice(
-        page * PAGE_SIZE,
-        (page + 1) * PAGE_SIZE,
-    );
+    const visibleProjects = filteredProjects.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
 
     const handleModalClose = useCallback(() => setSelected(null), []);
+
+    const liveCount = useMemo(
+        () => projects.filter((p) => deriveStatus(p) === 'live').length,
+        [projects],
+    );
+
+    const firstName = user?.fullname?.split(' ')?.[0];
 
     return (
         <>
             <style>{`
-        @keyframes fadeUp {
-          from { opacity: 0; transform: translateY(10px); }
-          to   { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes shimmer {
-          0%   { background-position: 200% 0; }
-          100% { background-position: -200% 0; }
-        }
-        .anim-fadeUp { animation: fadeUp 0.3s ease forwards; }
-        .animate-shimmer {
-          background: linear-gradient(90deg, #1a1a1a 25%, #242424 50%, #1a1a1a 75%);
-          background-size: 200% 100%;
-          animation: shimmer 1.5s infinite;
-        }
-      `}</style>
+                @keyframes fadeUp {
+                    from { opacity: 0; transform: translateY(10px); }
+                    to   { opacity: 1; transform: translateY(0); }
+                }
+                @keyframes modalIn {
+                    from { opacity: 0; transform: translateY(12px) scale(0.98); }
+                    to   { opacity: 1; transform: translateY(0) scale(1); }
+                }
+            `}</style>
 
-            {/* Modal overlay */}
-            {selected && (
-                <ProjectModal project={selected} onClose={handleModalClose} />
-            )}
+            {selected && <ProjectModal project={selected} onClose={handleModalClose} />}
 
-            <div
-                className="min-h-screen bg-[#0a0a0a] text-[#ededed]"
-                style={{
-                    fontFamily:
-                        "'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-                }}
-            >
-                {/* ── Topbar ── */}
+            <div className="min-h-screen bg-[#fbfbfd] font-sans text-foreground">
                 <Navbar variant="auth" user={user} onLogout={handleLogout} scrolled />
-
-                {/* ── Main ── */}
-                <main className="max-w-[1100px] mx-auto px-6 pt-10 pb-20 anim-fadeUp grid place-content-center min-h-screen">
-                    {/* Toolbar */}
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+                <main className="mx-auto max-w-[1100px] animate-[fadeUp_0.35s_ease_forwards] px-6 pb-24 pt-28 sm:pt-32">
+                    {/* Header */}
+                    <div className="mb-9 flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
                         <div>
-                            <h1 className="md:text-5xl font-semibold tracking-[-0.4px] text-[#ededed]">
-                                All Projects
+                            <h1 className="text-[34px] font-semibold tracking-tight text-foreground sm:text-[40px]">
+                                {greetingForHour()}
+                                {firstName ? `, ${firstName}` : ''}.
                             </h1>
                             {!loading && !fetchError && (
-                                <>
-                                    <p className="text-base text-white mt-0.5">
-                                        {projects.length}{' '}
-                                        {projects.length === 1 ? 'project' : 'projects'} deployed
-                                    </p>
-                                    <button onClick={() => navigate('/deployments')} className="text-sm text-white mt-5 underline cursor-pointer">
-                                        View all <span className=''>deployments</span>
-                                    </button>
-                                </>
+                                <p className="mt-1.5 text-[15px] text-muted-foreground">
+                                    You have {projects.length} {projects.length === 1 ? 'project' : 'projects'}
+                                    {liveCount > 0 ? `, ${liveCount} running live` : ''}.
+                                </p>
+                            )}
+                            {!loading && !fetchError && projects.length > 0 && (
+                                <button
+                                    onClick={() => navigate('/deployments')}
+                                    className="mt-3 text-[13px] font-medium transition-opacity hover:opacity-70"
+                                    style={{ color: BRAND }}
+                                >
+                                    View all deployments
+                                </button>
                             )}
                         </div>
 
-                        <div className="flex items-center gap-2">
-                            {/* Search bar — only when projects exist */}
+                        <div className="flex flex-wrap items-center gap-2">
                             {!loading && projects.length > 0 && (
-                                <div className="flex items-center gap-2 px-3 py-2 rounded-xl border border-[#222] bg-[#111] w-full sm:w-56 transition-colors duration-150 focus-within:border-[#333]">
-                                    <SearchIcon />
+                                <div className="flex w-full items-center gap-2 rounded-full border border-border bg-card px-4 py-2.5 transition-colors duration-150 focus-within:border-foreground/20 sm:w-56">
+                                    <SearchIcon className="text-muted-foreground" />
                                     <input
-                                        className="flex-1 bg-transparent border-none outline-none text-base text-[#ededed] placeholder-[#444]"
-                                        placeholder="Search projects..."
+                                        className="flex-1 border-none bg-transparent text-[14px] text-foreground outline-none placeholder:text-muted-foreground"
+                                        placeholder="Search projects"
                                         value={search}
                                         onChange={(e) => setSearch(e.target.value)}
                                     />
                                     {search && (
                                         <button
                                             onClick={() => setSearch('')}
-                                            className="text-white hover:text-white transition-colors text-xs"
+                                            className="text-muted-foreground transition-colors hover:text-foreground"
                                             aria-label="Clear search"
                                         >
-                                            ✕
+                                            <CloseIcon />
                                         </button>
                                     )}
                                 </div>
                             )}
 
-                            {/* View toggle */}
-                            <div className="flex items-center gap-0.5 p-1 rounded-lg border border-[#222] bg-[#111]">
+                            <div className="flex items-center gap-0.5 rounded-full border border-border bg-card p-1">
                                 <button
                                     onClick={() => setViewMode('grid')}
-                                    className={`w-7 h-7 rounded-md flex items-center justify-center transition-all duration-150 ${viewMode === 'grid'
-                                        ? 'bg-[#2a2a2a] text-[#ccc]'
-                                        : 'text-[#555] hover:text-[#999]'
+                                    className={`flex h-8 w-8 items-center justify-center rounded-full transition-all duration-150 ${viewMode === 'grid'
+                                        ? 'bg-primary text-primary-foreground'
+                                        : 'text-muted-foreground hover:text-foreground'
                                         }`}
                                     title="Grid view"
                                 >
@@ -774,9 +778,9 @@ export default function ProjectsPage() {
                                 </button>
                                 <button
                                     onClick={() => setViewMode('list')}
-                                    className={`w-7 h-7 rounded-md flex items-center justify-center transition-all duration-150 ${viewMode === 'list'
-                                        ? 'bg-[#2a2a2a] text-[#ccc]'
-                                        : 'text-[#555] hover:text-[#999]'
+                                    className={`flex h-8 w-8 items-center justify-center rounded-full transition-all duration-150 ${viewMode === 'list'
+                                        ? 'bg-primary text-primary-foreground'
+                                        : 'text-muted-foreground hover:text-foreground'
                                         }`}
                                     title="List view"
                                 >
@@ -784,67 +788,52 @@ export default function ProjectsPage() {
                                 </button>
                             </div>
 
-                            {/* Add New */}
                             <button
-                                onClick={() => navigate('/dashboard')}
-                                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-white text-base font-medium cursor-pointer flex-shrink-0 transition-all duration-150 hover:opacity-90"
-                                style={{
-                                    background: '#fff',
-                                    color: '#000',
-                                }}
+                                onClick={() => navigate('/deploy-new-project')}
+                                className="flex-shrink-0 rounded-full bg-primary px-4 py-2.5 text-[13px] font-medium text-primary-foreground transition-opacity duration-150 hover:opacity-90"
                             >
-                                + Add New
+                                + Add new
                             </button>
                         </div>
                     </div>
 
-                    {/* ── Content states ── */}
-
-                    {/* API error */}
+                    {/* Error state */}
                     {fetchError && (
-                        <div className="flex flex-col items-center justify-center py-24 gap-3 select-none">
-                            <div className="w-12 h-12 rounded-xl bg-[#111] border border-[#1e1e1e] flex items-center justify-center text-xl">
-                                ⚠️
+                        <div className="flex flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-border py-24">
+                            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-destructive/10 text-destructive">
+                                <CloseIcon className="h-5 w-5" />
                             </div>
                             <div className="text-center">
-                                <div className="text-[14px] font-medium text-[#555]">
+                                <div className="text-[14px] font-semibold text-foreground">
                                     Failed to load projects
                                 </div>
-                                <div className="text-base text-[#333] mt-1">
+                                <div className="mt-1 text-[13px] text-muted-foreground">
                                     Check your connection and try refreshing
                                 </div>
                             </div>
                             <button
                                 onClick={() => window.location.reload()}
-                                className="text-base text-[#555] hover:text-[#ccc] transition-colors border border-[#222] px-3 py-1.5 rounded-lg"
+                                className="rounded-full border border-border bg-card px-4 py-2 text-[13px] font-medium text-foreground transition-colors duration-150 hover:bg-muted"
                             >
                                 Retry
                             </button>
                         </div>
                     )}
 
-                    {/* Loading */}
-                    {loading &&
-                        (viewMode === 'grid' ? <SkeletonGrid /> : <SkeletonList />)}
+                    {loading && (viewMode === 'grid' ? <SkeletonGrid /> : <SkeletonList />)}
 
-                    {/* Empty — no projects */}
                     {!loading && !fetchError && projects.length === 0 && (
-                        <EmptyDeployments onNavigate={() => navigate('/dashboard')} />
+                        <EmptyDeployments onNavigate={() => navigate('/deploy-new-project')} />
                     )}
 
-                    {/* Empty — search no results */}
-                    {!loading &&
-                        !fetchError &&
-                        projects.length > 0 &&
-                        filteredProjects.length === 0 && (
-                            <EmptySearch search={search} onClear={() => setSearch('')} />
-                        )}
+                    {!loading && !fetchError && projects.length > 0 && filteredProjects.length === 0 && (
+                        <EmptySearch search={search} onClear={() => setSearch('')} />
+                    )}
 
-                    {/* Project content */}
                     {!loading && !fetchError && filteredProjects.length > 0 && (
                         <>
                             {viewMode === 'grid' ? (
-                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                                     {visibleProjects.map((project) => (
                                         <ProjectCard
                                             key={project._id}
@@ -854,8 +843,8 @@ export default function ProjectsPage() {
                                     ))}
                                 </div>
                             ) : (
-                                <div className="border border-[#1e1e1e] rounded-xl overflow-hidden">
-                                    <div className="flex flex-col divide-y divide-[#1a1a1a]">
+                                <div className="overflow-hidden rounded-2xl border border-border bg-card">
+                                    <div className="flex flex-col divide-y divide-border">
                                         {visibleProjects.map((project) => (
                                             <ProjectRow
                                                 key={project._id}
@@ -867,13 +856,12 @@ export default function ProjectsPage() {
                                 </div>
                             )}
 
-                            {/* Pagination */}
                             {totalPages > 1 && (
-                                <div className="flex items-center justify-between mt-8 pt-5 border-t border-[#1a1a1a]">
+                                <div className="mt-8 flex items-center justify-between border-t border-border pt-5">
                                     <button
                                         disabled={page === 0}
                                         onClick={() => setPage((p) => p - 1)}
-                                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#222] bg-[#111] text-xs text-[#666] cursor-pointer transition-all duration-150 disabled:opacity-30 disabled:cursor-not-allowed hover:border-[#333] hover:text-[#ccc]"
+                                        className="rounded-full border border-border bg-card px-3.5 py-1.5 text-[13px] font-medium text-foreground transition-all duration-150 hover:bg-muted disabled:cursor-not-allowed disabled:opacity-30"
                                     >
                                         ← Prev
                                     </button>
@@ -884,9 +872,7 @@ export default function ProjectsPage() {
                                                 key={idx}
                                                 onClick={() => setPage(idx)}
                                                 aria-label={`Page ${idx + 1}`}
-                                                className={`rounded-full transition-all duration-150 cursor-pointer border-0 p-0 ${idx === page
-                                                    ? 'bg-[#888] w-4 h-1.5'
-                                                    : 'bg-[#333] w-1.5 h-1.5 hover:bg-[#555]'
+                                                className={`rounded-full border-0 p-0 transition-all duration-150 ${idx === page ? 'h-1.5 w-5 bg-primary' : 'h-1.5 w-1.5 bg-border hover:bg-muted-foreground/40'
                                                     }`}
                                             />
                                         ))}
@@ -895,7 +881,7 @@ export default function ProjectsPage() {
                                     <button
                                         disabled={page === totalPages - 1}
                                         onClick={() => setPage((p) => p + 1)}
-                                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#222] bg-[#111] text-xs text-[#666] cursor-pointer transition-all duration-150 disabled:opacity-30 disabled:cursor-not-allowed hover:border-[#333] hover:text-[#ccc]"
+                                        className="rounded-full border border-border bg-card px-3.5 py-1.5 text-[13px] font-medium text-foreground transition-all duration-150 hover:bg-muted disabled:cursor-not-allowed disabled:opacity-30"
                                     >
                                         Next →
                                     </button>

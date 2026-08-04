@@ -1,99 +1,50 @@
 'use client';
-import { Link, useNavigate } from 'react-router-dom';
-import logo from '../assets/cloudkit-new.png';
+import { useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import LightRays from '@/components/LightRays';
 import Navbar from '@/components/navbar/Navbar';
-import BorderGlow from '@/components/BorderGlow';
 import BottomCallToAction from '@/components/bottom/BottomCallToAction';
 import Stats from '@/components/bottom/Stats';
 import useTitle from '@/hooks/useTitle';
 import { type StatType } from '@/types';
+import { Button } from '@/components/ui/button';
+import { handleLogout } from '@/services/userService';
 
 /* ─────────────────────────────────────────────
-   CloudKit Logo
-───────────────────────────────────────────── */
-function CloudKitLogo({ size = 32 }: { size?: number }) {
-  return (
-    <img
-      width={size}
-      height={size}
-      src={logo}
-      alt="CloudKit logo"
-      style={{ objectFit: 'contain' }}
-    />
-  );
-}
-
-/* ─────────────────────────────────────────────
-   Hero Cloud Symbol
+   Hero Cloud Symbol — quiet, glassy, Apple-ish
 ───────────────────────────────────────────── */
 function HeroCloud() {
   return (
     <div
       className="ck-float"
-      style={{ marginTop: '0rem', display: 'flex', justifyContent: 'center' }}
+      style={{ marginTop: '2.5rem', display: 'flex', justifyContent: 'center' }}
     >
       <svg
         viewBox="0 0 260 200"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
         style={{
-          width: 'clamp(160px, 30vw, 260px)',
+          width: 'clamp(140px, 22vw, 220px)',
           height: 'auto',
-          filter: 'drop-shadow(0 0 60px rgba(96,165,250,0.35))',
+          filter: 'drop-shadow(0 20px 40px rgba(0,113,227,0.14))',
         }}
       >
         <defs>
-          <linearGradient id="cloudGrad1" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="rgba(96,165,250,0.9)" />
-            <stop offset="50%" stopColor="rgba(167,139,250,0.8)" />
-            <stop offset="100%" stopColor="rgba(239,68,68,0.7)" />
+          <linearGradient id="cloudGradApple" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#0071e3" />
+            <stop offset="100%" stopColor="#66b2ff" />
           </linearGradient>
-          <filter id="glow">
-            <feGaussianBlur stdDeviation="3" result="coloredBlur" />
-            <feMerge>
-              <feMergeNode in="coloredBlur" />
-              <feMergeNode in="SourceGraphic" />
-            </feMerge>
-          </filter>
         </defs>
-        {[8, 4, 0].map((offset, idx) => (
-          <path
-            key={idx}
-            d={`M${196 - offset} ${130 + offset * 0.5}a${37 - offset} ${37 - offset} 0 0 0-${33 - offset}-${37 - offset}A${57 - offset} ${57 - offset} 0 0 0 ${44 + offset} ${130 + offset * 0.5}a${37 - offset} ${37 - offset} 0 0 0 0 ${74 - offset}h${152 - offset * 2}a${37 - offset} ${37 - offset} 0 0 0 0-${74 - offset}z`}
-            fill="none"
-            stroke={`rgba(255,255,255,${0.06 + idx * 0.04})`}
-            strokeWidth="1"
-          />
-        ))}
-        {[0, 1, 2, 3, 4, 5, 6, 7].map((i) => (
-          <path
-            key={`s${i}`}
-            d={`M${196 - i * 2.5} ${130 + i * 1.5}a${37 - i * 1.2} ${37 - i * 1.2} 0 0 0-${33 - i * 1}-${37 - i * 1.2}A${57 - i * 1.5} ${57 - i * 1.5} 0 0 0 ${44 + i * 1.5} ${130 + i * 1.5}a${37 - i * 1.2} ${37 - i * 1.2} 0 0 0 0 ${74 - i * 2.5}h${152 - i * 5}a${37 - i * 1.2} ${37 - i * 1.2} 0 0 0 0-${74 - i * 2.5}z`}
-            fill="none"
-            stroke={`rgba(255,255,255,${0.5 - i * 0.055})`}
-            strokeWidth="0.8"
-            filter={i === 0 ? 'url(#glow)' : undefined}
-          />
-        ))}
         <path
           d="M196 130a37 37 0 0 0-33-37A57 57 0 0 0 44 130a37 37 0 0 0 0 74h152a37 37 0 0 0 0-74z"
-          fill="url(#cloudGrad1)"
-          opacity="0.12"
+          fill="url(#cloudGradApple)"
+          opacity="0.08"
         />
         <path
           d="M196 130a37 37 0 0 0-33-37A57 57 0 0 0 44 130a37 37 0 0 0 0 74h152a37 37 0 0 0 0-74z"
           fill="none"
-          stroke="url(#cloudGrad1)"
+          stroke="url(#cloudGradApple)"
           strokeWidth="1.5"
-          filter="url(#glow)"
         />
-        <circle cx="82" cy="118" r="2" fill="rgba(96,165,250,0.7)" />
-        <circle cx="130" cy="108" r="1.5" fill="rgba(167,139,250,0.7)" />
-        <circle cx="178" cy="120" r="2" fill="rgba(239,68,68,0.6)" />
-        <circle cx="62" cy="148" r="1.2" fill="rgba(96,165,250,0.4)" />
-        <circle cx="200" cy="150" r="1.2" fill="rgba(167,139,250,0.4)" />
       </svg>
     </div>
   );
@@ -131,32 +82,32 @@ export default function LandingPage() {
 
   const features = [
     {
-      iconBg: 'rgba(251,191,36,0.15)',
+      iconBg: '#f5a623',
       title: 'Git Push Deploys',
       desc: 'Connect your repository and Cloudkit automatically builds and deploys every commit with minimal setup.',
     },
     {
-      iconBg: 'rgba(59,130,246,0.15)',
+      iconBg: '#0071e3',
       title: 'Global CDN Delivery',
       desc: 'Static assets are cached and delivered through Render’s global CDN with HTTP/2 and Brotli compression.',
     },
     {
-      iconBg: 'rgba(34,197,94,0.15)',
+      iconBg: '#34c759',
       title: 'Automatic HTTPS',
       desc: 'Every deployment gets free TLS certificates, secure HTTPS connections, and built-in DDoS protection.',
     },
     {
-      iconBg: 'rgba(168,85,247,0.15)',
+      iconBg: '#af52de',
       title: 'Instant Rollbacks',
       desc: 'Redeploy previous builds instantly if a deployment breaks production or introduces regressions.',
     },
     {
-      iconBg: 'rgba(239,68,68,0.15)',
+      iconBg: '#ff3b30',
       title: 'Framework Ready',
       desc: 'Works out of the box with React, Vite. Coming soon with other modern JavaScript frameworks.',
     },
     {
-      iconBg: 'rgba(20,184,166,0.15)',
+      iconBg: '#00c7be',
       title: 'Continuous Deployment',
       desc: 'Deploy automatically on every push to your production branch with zero manual release steps.',
     },
@@ -171,53 +122,36 @@ export default function LandingPage() {
 
   const navigate = useNavigate();
 
-  useTitle('Home')
+  useTitle('Cloudkit')
 
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
-        html, body { background: #050505 !important; color: #ffffff !important; margin: 0; padding: 0; }
+        html, body { background: #fbfbfd !important; color: #1d1d1f !important; margin: 0; padding: 0; }
         *, *::before, *::after { box-sizing: border-box; }
 
-        @keyframes pulse1 { 0%,100%{transform:scale(1) translate(0,0);opacity:.8} 50%{transform:scale(1.15) translate(20px,-20px);opacity:1} }
-        @keyframes pulse2 { 0%,100%{transform:scale(1) translate(0,0);opacity:.7} 50%{transform:scale(1.1) translate(-15px,15px);opacity:1} }
-        @keyframes pulse3 { 0%,100%{transform:scale(1) translate(0,0);opacity:.6} 50%{transform:scale(1.2) translate(10px,-10px);opacity:.9} }
-        @keyframes fadeUp { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:translateY(0)} }
-        @keyframes shimmer { 0%{background-position:-200% center} 100%{background-position:200% center} }
-        @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
+        @keyframes fadeUp { from{opacity:0;transform:translateY(18px)} to{opacity:1;transform:translateY(0)} }
+        @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
         @keyframes marquee { from{transform:translateX(0)} to{transform:translateX(-50%)} }
+        @keyframes softGlow { 0%,100%{opacity:.5} 50%{opacity:.9} }
 
-        .ck-fade-up   { animation: fadeUp .7s ease both; }
-        .ck-fade-up-1 { animation: fadeUp .7s .12s ease both; }
-        .ck-fade-up-2 { animation: fadeUp .7s .22s ease both; }
-        .ck-fade-up-3 { animation: fadeUp .7s .32s ease both; }
-        .ck-float     { animation: float 6s ease-in-out infinite; }
-        .ck-pulse1    { animation: pulse1 8s ease-in-out infinite; }
-        .ck-pulse2    { animation: pulse2 10s ease-in-out infinite; }
-        .ck-pulse3    { animation: pulse3 12s ease-in-out infinite; }
-        .ck-pulse1r   { animation: pulse1 9s ease-in-out infinite reverse; }
-        .ck-marquee   { animation: marquee 22s linear infinite; display:flex; gap:12px; width:max-content; }
+        .ck-fade-up   { animation: fadeUp .8s cubic-bezier(.22,1,.36,1) both; }
+        .ck-fade-up-1 { animation: fadeUp .8s .08s cubic-bezier(.22,1,.36,1) both; }
+        .ck-fade-up-2 { animation: fadeUp .8s .16s cubic-bezier(.22,1,.36,1) both; }
+        .ck-fade-up-3 { animation: fadeUp .8s .24s cubic-bezier(.22,1,.36,1) both; }
+        .ck-float     { animation: float 7s ease-in-out infinite; }
+        .ck-marquee   { animation: marquee 28s linear infinite; display:flex; gap:10px; width:max-content; }
         .ck-marquee:hover { animation-play-state: paused; }
 
-        .ck-shimmer {
-          background: linear-gradient(90deg,rgba(255,255,255,.4) 0%,#fff 35%,rgba(255,255,255,.4) 60%,#fff 90%);
-          background-size: 200% auto;
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-          background-clip: text;
-          animation: shimmer 4s linear infinite;
+        @media (prefers-reduced-motion: reduce) {
+          .ck-fade-up, .ck-fade-up-1, .ck-fade-up-2, .ck-fade-up-3, .ck-float, .ck-marquee { animation: none !important; }
         }
 
         .ck-grid-bg {
           position: absolute; inset: 0; pointer-events: none;
-          background-image:
-            linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
-          background-size: 60px 60px;
-          mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, black 40%, transparent 100%);
-          -webkit-mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, black 40%, transparent 100%);
+          background-image: radial-gradient(circle at 50% 0%, rgba(0,113,227,0.05), transparent 60%);
         }
 
         .ck-marquee-mask {
@@ -227,69 +161,72 @@ export default function LandingPage() {
         }
 
         .ck-card {
-          background: rgba(255,255,255,0.03);
-          border: 1px solid rgba(255,255,255,0.08);
-          border-radius: 16px;
-          transition: all 0.3s ease;
+          background: #ffffff;
+          border: 1px solid #e5e5e7;
+          border-radius: 20px;
+          transition: transform .35s cubic-bezier(.22,1,.36,1), box-shadow .35s ease, border-color .35s ease;
         }
         .ck-card:hover {
-          background: rgba(255,255,255,0.06);
-          border-color: rgba(255,255,255,0.16);
-          transform: translateY(-2px);
+          transform: translateY(-3px);
+          box-shadow: 0 20px 40px rgba(0,0,0,0.06);
+          border-color: #d2d2d7;
         }
 
-        .ck-btn-outline {
-          display: inline-flex; align-items: center; gap: 6px;
-          padding: 11px 20px; background: transparent; color: #ffffff;
-          font-size: 14px; font-weight: 500; border-radius: 8px;
-          border: 1px solid rgba(255,255,255,0.16);
-          text-decoration: none; cursor: pointer; font-family: inherit;
-          transition: all 0.2s ease;
+        .ck-btn-primary {
+          display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+          padding: 13px 28px; background: #0071e3; color: #ffffff;
+          font-size: 16px; font-weight: 500; border-radius: 980px; border: none;
+          cursor: pointer; font-family: inherit; letter-spacing: -0.01em;
+          transition: background .2s ease, transform .2s ease;
         }
-        .ck-btn-outline:hover { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.28); }
+        .ck-btn-primary:hover { background: #0077ed; }
+        .ck-btn-primary:active { transform: scale(0.98); }
+        .ck-btn-primary:focus-visible { outline: 2px solid #0071e3; outline-offset: 3px; }
 
         .ck-chip {
           display: inline-flex; align-items: center; gap: 6px;
-          padding: 4px 14px; background: rgba(255,255,255,0.07);
-          border: 1px solid rgba(255,255,255,0.13); border-radius: 999px;
-          font-size: 13px; color: rgba(255,255,255,0.85);
+          padding: 5px 14px; background: rgba(0,113,227,0.08);
+          border: 1px solid rgba(0,113,227,0.18); border-radius: 999px;
+          font-size: 13px; font-weight: 500; color: #0071e3;
         }
 
         .ck-badge {
           display: inline-flex; align-items: center; gap: 6px;
-          background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.13);
-          border-radius: 8px; padding: 2px 10px; font-size: 0.82em;
+          background: #f5f5f7; border: 1px solid #e5e5e7;
+          border-radius: 8px; padding: 2px 10px; font-size: 0.82em; color: #1d1d1f;
         }
 
-        .ck-gradient-border { border-radius: 16px; padding: 1px; background: linear-gradient(135deg, rgba(96,165,250,.35), rgba(168,85,247,.35), rgba(239,68,68,.35)); }
-        .ck-gradient-inner  { background: #0d0d0d; border-radius: 15px; padding: 32px; }
+        .ck-icon-dot {
+          width: 34px; height: 34px; border-radius: 10px;
+          display: flex; align-items: center; justify-content: center;
+          margin-bottom: 18px;
+        }
 
         /* Responsive grids */
         .ck-features { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; }
         .ck-stats    { display: grid; grid-template-columns: repeat(4,1fr); gap: 32px; text-align: center; max-width: 860px; margin: 0 auto; }
-        .ck-cta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; max-width: 1100px; margin: 0 auto; }
 
         @media (max-width: 900px) { .ck-features { grid-template-columns: repeat(2,1fr); } }
         @media (max-width: 560px) { .ck-features { grid-template-columns: 1fr; } .ck-stats { grid-template-columns: repeat(2,1fr); gap: 24px; } }
-        @media (max-width: 768px) { .ck-cta-grid { grid-template-columns: 1fr; } }
       `}</style>
 
-      {/* ROOT — inline background guaranteed */}
+      {/* ROOT */}
       <div
         style={{
           minHeight: '100vh',
-          background: '#050505',
-          color: '#ffffff',
-          fontFamily: "'DM Sans', system-ui, sans-serif",
+          background: '#fbfbfd',
+          color: '#1d1d1f',
+          fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', system-ui, sans-serif",
           overflowX: 'hidden',
         }}
       >
-        <Navbar variant="guest" scrolled={scrolled} />
+        <Navbar variant="guest" scrolled={scrolled} onLogout={handleLogout} />
+
         {/* ── HERO ── */}
         <section
           style={{
             position: 'relative',
-            minHeight: '100vh',
+            minHeight: '92vh',
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
@@ -299,167 +236,25 @@ export default function LandingPage() {
             overflow: 'hidden',
           }}
         >
-          <div
-            style={{
-              position: 'absolute',
-              inset: 0,
-              zIndex: 0,
-              pointerEvents: 'none',
-            }}
-          >
-            <LightRays
-              raysOrigin="top-center"
-              raysColor="#ffffff"
-              raysSpeed={1}
-              lightSpread={1}
-              rayLength={2}
-              pulsating={false}
-              fadeDistance={1}
-              saturation={1}
-              followMouse
-              mouseInfluence={0.1}
-              noiseAmount={0}
-              distortion={0}
-            />
-          </div>
           <div className="ck-grid-bg" aria-hidden="true" />
-
-          {/* Glow orbs */}
-          <div
-            aria-hidden="true"
-            style={{
-              position: 'absolute',
-              inset: 0,
-              overflow: 'hidden',
-              pointerEvents: 'none',
-            }}
-          >
-            <div
-              className="ck-pulse1"
-              style={{
-                position: 'absolute',
-                top: '8%',
-                left: '12%',
-                width: 'clamp(200px,30vw,420px)',
-                height: 'clamp(200px,30vw,420px)',
-                borderRadius: '50%',
-                background:
-                  'radial-gradient(circle,rgba(59,130,246,0.18) 0%,transparent 70%)',
-                filter: 'blur(40px)',
-              }}
-            />
-            <div
-              className="ck-pulse2"
-              style={{
-                position: 'absolute',
-                top: '4%',
-                right: '8%',
-                width: 'clamp(180px,28vw,380px)',
-                height: 'clamp(180px,28vw,380px)',
-                borderRadius: '50%',
-                background:
-                  'radial-gradient(circle,rgba(239,68,68,0.15) 0%,transparent 70%)',
-                filter: 'blur(40px)',
-              }}
-            />
-            <div
-              className="ck-pulse3"
-              style={{
-                position: 'absolute',
-                top: '20%',
-                left: '38%',
-                width: 'clamp(160px,26vw,340px)',
-                height: 'clamp(160px,26vw,340px)',
-                borderRadius: '50%',
-                background:
-                  'radial-gradient(circle,rgba(34,197,94,0.12) 0%,transparent 70%)',
-                filter: 'blur(35px)',
-              }}
-            />
-            <div
-              className="ck-pulse1r"
-              style={{
-                position: 'absolute',
-                top: '22%',
-                right: '26%',
-                width: 'clamp(140px,24vw,300px)',
-                height: 'clamp(140px,24vw,300px)',
-                borderRadius: '50%',
-                background:
-                  'radial-gradient(circle,rgba(168,85,247,0.14) 0%,transparent 70%)',
-                filter: 'blur(35px)',
-              }}
-            />
-          </div>
-
-          {/* Crosshairs */}
-          <div
-            aria-hidden="true"
-            style={{
-              position: 'absolute',
-              top: 72,
-              left: '8%',
-              width: 20,
-              height: 20,
-              borderTop: '1px solid rgba(255,255,255,0.14)',
-              borderLeft: '1px solid rgba(255,255,255,0.14)',
-            }}
-          />
-          <div
-            aria-hidden="true"
-            style={{
-              position: 'absolute',
-              top: 72,
-              right: '8%',
-              width: 20,
-              height: 20,
-              borderTop: '1px solid rgba(255,255,255,0.14)',
-              borderRight: '1px solid rgba(255,255,255,0.14)',
-            }}
-          />
-          <div
-            aria-hidden="true"
-            style={{
-              position: 'absolute',
-              bottom: 36,
-              left: '8%',
-              width: 20,
-              height: 20,
-              borderBottom: '1px solid rgba(255,255,255,0.14)',
-              borderLeft: '1px solid rgba(255,255,255,0.14)',
-            }}
-          />
-          <div
-            aria-hidden="true"
-            style={{
-              position: 'absolute',
-              bottom: 36,
-              right: '8%',
-              width: 20,
-              height: 20,
-              borderBottom: '1px solid rgba(255,255,255,0.14)',
-              borderRight: '1px solid rgba(255,255,255,0.14)',
-            }}
-          />
 
           {/* Hero content */}
           <div
-            className="-mt-14"
             style={{
               position: 'relative',
               zIndex: 2,
-              maxWidth: '100%',
+              maxWidth: 780,
               width: '100%',
             }}
           >
-            <div className="ck-fade-up" style={{ marginBottom: 28 }}>
+            <div className="ck-fade-up" style={{ marginBottom: 24 }}>
               <span className="ck-chip">
                 <span
                   style={{
                     width: 6,
                     height: 6,
                     borderRadius: '50%',
-                    background: '#22c55e',
+                    background: '#0071e3',
                     display: 'inline-block',
                   }}
                 />
@@ -468,29 +263,30 @@ export default function LandingPage() {
             </div>
 
             <h1
-              className="ck-fade-up-1 text-[48px] lg:text-[100px]"
+              className="ck-fade-up-1"
               style={{
-                fontSize: '',
+                fontSize: 'clamp(40px, 7vw, 80px)',
                 fontWeight: 700,
-                lineHeight: 1.08,
+                lineHeight: 1.07,
                 letterSpacing: '-0.03em',
-                color: '#fff',
+                color: '#1d1d1f',
                 margin: 0,
               }}
             >
               Build and deploy on{' '}
-              <span className="ck-shimmer">CloudKit</span>
+              <span style={{ color: '#0071e3' }}>Cloudkit</span>
             </h1>
 
             <p
-              className="ck-fade-up-2 md:text-[22px]"
+              className="ck-fade-up-2"
               style={{
                 marginTop: 20,
                 marginBottom: 36,
-                fontSize: '',
-                color: '',
-                lineHeight: 1.72,
-                // maxWidth: 460,
+                fontSize: 'clamp(17px, 2vw, 21px)',
+                color: '#6e6e73',
+                lineHeight: 1.6,
+                fontWeight: 400,
+                maxWidth: 560,
                 margin: '20px auto 36px',
               }}
             >
@@ -502,11 +298,9 @@ export default function LandingPage() {
               className="ck-fade-up-3"
               style={{ display: 'flex', justifyContent: 'center' }}
             >
-
-              <button onClick={() => navigate('/login')} className='bg-white text-black p-3 rounded-[8px] w-auto md:text-xl'>
+              <Button onClick={() => navigate('/auth/login')} className="ck-btn-primary h-12">
                 Deploy app
-              </button>
-
+              </Button>
             </div>
 
             <HeroCloud />
@@ -519,8 +313,7 @@ export default function LandingPage() {
               left: '12%',
               right: '12%',
               height: 1,
-              background:
-                'linear-gradient(90deg,transparent,rgba(255,255,255,0.08),transparent)',
+              background: '#e5e5e7',
             }}
           />
         </section>
@@ -528,8 +321,9 @@ export default function LandingPage() {
         {/* ── MARQUEE ── */}
         <section
           style={{
-            padding: '56px 0',
-            borderBottom: '1px solid rgba(255,255,255,0.06)',
+            padding: '48px 0',
+            borderTop: '1px solid #e5e5e7',
+            borderBottom: '1px solid #e5e5e7',
             overflow: 'hidden',
           }}
         >
@@ -540,8 +334,8 @@ export default function LandingPage() {
               fontWeight: 600,
               letterSpacing: '0.12em',
               textTransform: 'uppercase',
-              color: 'rgba(255,255,255,0.3)',
-              marginBottom: 28,
+              color: '#86868b',
+              marginBottom: 24,
             }}
           >
             Develop with your favorite tools
@@ -553,11 +347,11 @@ export default function LandingPage() {
                   key={i}
                   style={{
                     padding: '8px 18px',
-                    background: 'rgba(255,255,255,0.04)',
-                    border: '1px solid rgba(255,255,255,0.08)',
+                    background: '#ffffff',
+                    border: '1px solid #e5e5e7',
                     borderRadius: 999,
                     fontSize: 13,
-                    color: 'rgba(255,255,255,0.6)',
+                    color: '#3a3a3c',
                     whiteSpace: 'nowrap',
                     fontWeight: 500,
                   }}
@@ -572,19 +366,19 @@ export default function LandingPage() {
         {/* ── FEATURES ── */}
         <section
           style={{
-            padding: 'clamp(60px,10vw,100px) clamp(16px,4vw,24px)',
+            padding: 'clamp(60px,10vw,110px) clamp(16px,4vw,24px)',
             maxWidth: 1100,
             margin: '0 auto',
           }}
         >
-          <div style={{ textAlign: 'center', marginBottom: 60 }}>
+          <div style={{ textAlign: 'center', marginBottom: 56 }}>
             <p
               style={{
                 fontSize: 11,
                 fontWeight: 600,
                 letterSpacing: '0.12em',
                 textTransform: 'uppercase',
-                color: 'rgba(255,255,255,0.32)',
+                color: '#86868b',
                 marginBottom: 12,
               }}
             >
@@ -592,63 +386,61 @@ export default function LandingPage() {
             </p>
             <h2
               style={{
-                fontSize: 'clamp(1.7rem,4vw,2.8rem)',
+                fontSize: 'clamp(1.7rem,4vw,2.6rem)',
                 fontWeight: 700,
                 letterSpacing: '-0.03em',
-                lineHeight: 1.12,
-                color: '#fff',
+                lineHeight: 1.15,
+                color: '#1d1d1f',
               }}
             >
               Update your <span className="ck-badge">Apps</span> without
-              worrying about <span className="ck-badge">CI/CD</span> Pipeline
+              worrying about <span className="ck-badge">CI/CD</span> pipeline
             </h2>
           </div>
 
           <div className="ck-features">
             {features.map((f, i) => (
-              <BorderGlow
+              <div
                 key={i}
-                edgeSensitivity={30}
-                glowColor="60 120 200"
-                backgroundColor="#0d0d0d"
-                borderRadius={16}
-                glowRadius={40}
-                glowIntensity={0.8}
-                coneSpread={25}
-                animated={false}
-                colors={['#60a5fa', '#a78bfa', '#f472b6']}
+                className="ck-card ck-fade-up"
+                style={{ padding: 28, animationDelay: `${i * 0.06}s` }}
               >
                 <div
-                  className="ck-fade-up overflow-hidden"
+                  className="ck-icon-dot"
+                  style={{ background: `${f.iconBg}1a` }}
+                >
+                  <span
+                    style={{
+                      width: 10,
+                      height: 10,
+                      borderRadius: 3,
+                      background: f.iconBg,
+                      display: 'inline-block',
+                    }}
+                  />
+                </div>
+                <h3
                   style={{
-                    padding: 28,
-                    animationDelay: `${i * 0.08}s`,
-                    overflow: 'hidden',
+                    fontSize: 16,
+                    fontWeight: 600,
+                    marginBottom: 8,
+                    letterSpacing: '-0.02em',
+                    color: '#1d1d1f',
                   }}
                 >
-                  <h3
-                    style={{
-                      fontSize: 15,
-                      fontWeight: 600,
-                      marginBottom: 8,
-                      letterSpacing: '-0.02em',
-                      color: '#fff',
-                    }}
-                  >
-                    {f.title}
-                  </h3>
-                  <p
-                    style={{
-                      fontSize: 14,
-                      color: 'rgba(255,255,255,0.45)',
-                      lineHeight: 1.65,
-                      margin: 0,
-                    }}
-                  >
-                    {f.desc}
-                  </p>
-                </div>
-              </BorderGlow>
+                  {f.title}
+                </h3>
+                <p
+                  style={{
+                    fontSize: 14,
+                    color: '#6e6e73',
+                    lineHeight: 1.65,
+                    margin: 0,
+                  }}
+                >
+                  {f.desc}
+                </p>
+              </div>
             ))}
           </div>
         </section>
