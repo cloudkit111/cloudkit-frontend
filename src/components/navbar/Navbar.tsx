@@ -55,7 +55,6 @@ const Navbar: React.FC<NavbarProps> = ({
   user,
   onLogout,
   scrolled = false,
-  logo,
   logoAlt = 'Logo',
   items = [],
   ease = 'power3.out',
