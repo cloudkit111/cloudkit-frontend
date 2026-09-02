@@ -115,7 +115,7 @@ export default function DashboardPage() {
         // Only redirect if NO installation_id in URL and user has none saved
         toast.info('Please install the CloudKit GitHub App to continue');
         setTimeout(() => {
-          window.location.href = 'https://github.com/apps/cloudkit11/installations/new';
+          window.location.href = 'https://github.com/apps/Cloudkit-app/installations/new';
         }, 2000);
       }
     };
